@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Service Details{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Service Details</h1>
+<div class="bg-white p-6 rounded shadow space-y-2">
+    <h2 class="text-xl font-bold">{{ service.title }}</h2>
+    <p>{{ service.description }}</p>
+    <p class="text-gray-700">Price: {{ service.price }} FCFA</p>
+    <p class="text-gray-700">Location: {{ service.location }}</p>
+</div>
+<div class="mt-4 flex gap-2">
+    <a href="{% url 'services:list' %}" class="text-blue-600 hover:underline">Back to list</a>
+</div>
+{% if related_services %}
+<div class="mt-4 text-center">
+    <a href="{% url 'services:list' %}?category={{ service.category }}" class="text-primary hover:text-primary-dark font-medium text-sm">
+        View All {{ service.category }} Services
+    </a>
+</div>
+{% endif %}
+{% endblock %}

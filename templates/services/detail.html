@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ service.title }} - {{ service.expert.user.get_full_name }}{% endblock %}
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-gradient-to-br from-primary to-primary-dark text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col lg:flex-row items-center gap-8">
+            <!-- Service Image -->
+            <div class="lg:w-1/3">
+                <div class="relative">
+                    {% if service.expert.profile_picture %}
+                        <img src="{{ service.expert.profile_picture.url }}" alt="{{ service.title }}" class="w-full h-80 object-cover rounded-2xl shadow-2xl">
+                    {% else %}
+                        <div class="w-full h-80 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl shadow-2xl flex items-center justify-center">
+                            <div class="text-center text-gray-500">
+                                <i class="fa-solid fa-image text-6xl mb-4"></i>
+                                <p class="text-xl">No Image Available</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Category Badge -->
+                    <div class="absolute top-4 left-4">
+                        <span class="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium">
+                            {{ service.category }}
+                        </span>
+                    </div>
+                    
+                    <!-- Price Badge -->
+                    <div class="absolute top-4 right-4">
+                        <span class="bg-warning text-gray-900 px-4 py-2 rounded-full text-lg font-bold">
+                            {{ service.price|floatformat:0 }} FCFA
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Service Info -->
+            <div class="lg:w-2/3 text-center lg:text-left">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">{{ service.title }}</h1>
+                <p class="text-xl text-blue-100 mb-6 leading-relaxed">{{ service.description|truncatewords:30 }}</p>
+                
+                <!-- Expert Info -->
+                <div class="flex items-center justify-center lg:justify-start mb-6">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-primary text-2xl font-bold mr-4">
+                        {{ service.expert.user.first_name|first }}{{ service.expert.user.last_name|first }}
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold">{{ service.expert.user.get_full_name }}</h3>
+                        <p class="text-blue-100">{{ service.expert.location|default:"Location not specified" }}</p>
+                    </div>
+                </div>
+                
+                <!-- Rating -->
+                <div class="flex items-center justify-center lg:justify-start mb-6">
+                    <div class="flex text-warning text-2xl mr-3">
+                        {% for i in "12345" %}
+                            <i class="fa-solid fa-star"></i>
+                        {% endfor %}
+                    </div>
+                    <span class="text-xl font-semibold">4.8</span>
+                    <span class="text-blue-100 ml-2">(24 reviews)</span>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                    <a href="{% url 'chat_room' service.expert.user.id %}" class="bg-warning hover:bg-yellow-500 text-gray-900 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        <i class="fa-solid fa-comments mr-2"></i>Contact Expert
+                    </a>
+                    <a href="{% url 'create_request' %}?service={{ service.id }}" class="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 backdrop-blur-sm border border-white/30">
+                        <i class="fa-solid fa-file-lines mr-2"></i>Request Service
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Left Content -->
+        <div class="lg:w-2/3">
+            <!-- Service Description -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Service Description</h2>
+                <div class="prose prose-lg max-w-none">
+                    <p class="text-gray-700 leading-relaxed mb-6">{{ service.description }}</p>
+                    
+                    {% if service.details %}
+                        <div class="mt-6">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">Additional Details</h3>
+                            <p class="text-gray-700 leading-relaxed">{{ service.details }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Expert Information -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">About the Expert</h2>
+                
+                <div class="flex items-start space-x-6">
+                    <div class="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+                        {{ service.expert.user.first_name|first }}{{ service.expert.user.last_name|first }}
+                    </div>
+                    
+                    <div class="flex-1">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ service.expert.user.get_full_name }}</h3>
+                        <p class="text-gray-600 mb-4">{{ service.expert.bio|default:"No bio available." }}</p>
+                        
+                        {% if service.expert.skills %}
+                            <div class="mb-4">
+                                <h4 class="font-medium text-gray-700 mb-2">Skills & Expertise</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    {% for skill in service.expert.skills|split:"," %}
+                                        <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">{{ skill|strip }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="flex items-center space-x-6 text-sm text-gray-500">
+                            <span><i class="fa-solid fa-map-marker-alt mr-2"></i>{{ service.expert.location|default:"Location not specified" }}</span>
+                            <span><i class="fa-solid fa-calendar mr-2"></i>Member since {{ service.expert.user.date_joined|date:"F Y" }}</span>
+                            {% if service.expert.hourly_rate %}
+                                <span><i class="fa-solid fa-money-bill mr-2"></i>{{ service.expert.hourly_rate }} FCFA/hour</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews Section -->
+            <div class="bg-white rounded-2xl shadow-lg p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Reviews & Ratings</h2>
+                    <button class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg font-medium transition-all duration-200">
+                        <i class="fa-solid fa-star mr-2"></i>Write Review
+                    </button>
+                </div>
+                
+                <!-- Overall Rating -->
+                <div class="flex items-center mb-8 p-6 bg-gray-50 rounded-xl">
+                    <div class="text-center mr-8">
+                        <div class="text-4xl font-bold text-gray-800">4.8</div>
+                        <div class="flex text-warning text-xl mb-2">
+                            {% for i in "12345" %}
+                                <i class="fa-solid fa-star"></i>
+                            {% endfor %}
+                        </div>
+                        <div class="text-sm text-gray-600">24 reviews</div>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="space-y-2">
+                            {% for i in "54321" %}
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-600 w-8">{{ i }}</span>
+                                    <div class="flex-1 mx-3 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-warning h-2 rounded-full" style="width: {% if i == '5' %}80%{% elif i == '4' %}15%{% elif i == '3' %}3%{% elif i == '2' %}1%{% else %}1%{% endif %}"></div>
+                                    </div>
+                                    <span class="text-sm text-gray-600 w-12">{% if i == '5' %}19{% elif i == '4' %}4{% elif i == '3' %}1{% else %}0{% endif %}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Individual Reviews -->
+                <div class="space-y-6">
+                    {% for review in reviews %}
+                    <div class="border-b border-gray-200 pb-6 last:border-b-0">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
+                                {{ review.reviewer.user.first_name|first }}{{ review.reviewer.user.last_name|first }}
+                            </div>
+                            
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-semibold text-gray-800">{{ review.reviewer.user.get_full_name }}</h4>
+                                    <div class="flex text-warning">
+                                        {% for i in "12345" %}
+                                            <i class="fa-solid fa-star {% if forloop.counter <= review.score %}text-warning{% else %}text-gray-300{% endif %}"></i>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                
+                                <p class="text-gray-700 mb-2">{{ review.review }}</p>
+                                
+                                <div class="flex items-center justify-between text-sm text-gray-500">
+                                    <span>{{ review.created_at|date:"F j, Y" }}</span>
+                                    {% if review.helpful_count %}
+                                        <span><i class="fa-solid fa-thumbs-up mr-1"></i>{{ review.helpful_count }} helpful</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-8">
+                        <i class="fa-solid fa-star text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">No reviews yet. Be the first to review this service!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Load More Reviews -->
+                {% if reviews|length >= 5 %}
+                <div class="text-center mt-6">
+                    <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-all duration-200">
+                        Load More Reviews
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="lg:w-1/3">
+            <!-- Service Summary Card -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6 sticky top-24">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Service Summary</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Category</span>
+                        <span class="font-medium text-gray-800">{{ service.category }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Price</span>
+                        <span class="font-bold text-primary text-xl">{{ service.price|floatformat:0 }} FCFA</span>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Location</span>
+                        <span class="font-medium text-gray-800">{{ service.location }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Response Time</span>
+                        <span class="font-medium text-gray-800">Usually responds in 2 hours</span>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Rating</span>
+                        <div class="flex items-center">
+                            <div class="flex text-warning mr-2">
+                                {% for i in "12345" %}
+                                    <i class="fa-solid fa-star"></i>
+                                {% endfor %}
+                            </div>
+                            <span class="font-medium text-gray-800">4.8</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 space-y-3">
+                    <a href="{% url 'chat_room' service.expert.user.id %}" class="w-full bg-primary hover:bg-primary-dark text-white py-3 px-4 rounded-lg font-medium text-center transition-all duration-200 block">
+                        <i class="fa-solid fa-comments mr-2"></i>Start Chat
+                    </a>
+                    
+                    <a href="{% url 'create_request' %}?service={{ service.id }}" class="w-full bg-warning hover:bg-yellow-500 text-gray-900 py-3 px-4 rounded-lg font-medium text-center transition-all duration-200 block">
+                        <i class="fa-solid fa-file-lines mr-2"></i>Request Service
+                    </a>
+                    
+                    <button class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium transition-all duration-200">
+                        <i class="fa-solid fa-heart mr-2"></i>Save to Wishlist
+                    </button>
+                </div>
+            </div>
+
+            <!-- Related Services -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Related Services</h3>
+                
+                <div class="space-y-4">
+                    {% for related_service in related_services %}
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                        <h4 class="font-semibold text-gray-800 mb-2">{{ related_service.title }}</h4>
+                        <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ related_service.description|truncatewords:15 }}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-primary">{{ related_service.price|floatformat:0 }} FCFA</span>
+                            <a href="{% url 'service_detail' related_service.id %}" class="text-primary hover:text-primary-dark text-sm">
+                                View <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fa-solid fa-search text-2xl text-gray-300 mb-2"></i>
+                        <p class="text-gray-500 text-sm">No related services found</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                {% if related_services %}
+                <div class="mt-4 text-center">
+                    <a href="{% url 'services:list' namespace='services' %}?category={{ service.category }}" class="text-primary hover:text-primary-dark font-medium text-sm">
+                        View All {{ service.category }} Services
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.prose {
+    color: #374151;
+}
+
+.prose h3 {
+    color: #1f2937;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.prose p {
+    margin-bottom: 1rem;
+    line-height: 1.75;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,233 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .logout-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        padding: 40px;
+        width: 100%;
+        max-width: 500px;
+        text-align: center;
+    }
+    
+    .logout-header {
+        margin-bottom: 30px;
+    }
+    
+    .logout-header h1 {
+        color: #333;
+        font-size: 28px;
+        font-weight: 600;
+        margin: 0 0 10px 0;
+    }
+    
+    .logout-header p {
+        color: #666;
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .logout-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 20px;
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 40px;
+        font-weight: bold;
+    }
+    
+    .message-box {
+        background: #f8f9fa;
+        color: #495057;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        border: 1px solid #dee2e6;
+        font-size: 14px;
+        line-height: 1.6;
+        text-align: left;
+    }
+    
+    .message-box h3 {
+        margin: 0 0 15px 0;
+        color: #495057;
+        font-size: 18px;
+    }
+    
+    .message-box p {
+        margin: 0 0 10px 0;
+    }
+    
+    .message-box ul {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+    
+    .message-box li {
+        margin-bottom: 5px;
+    }
+    
+    .login-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        padding: 14px 32px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s;
+        margin-top: 20px;
+    }
+    
+    .login-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        text-decoration: none;
+        color: white;
+    }
+    
+    .form-footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        text-align: center;
+        color: #666;
+        font-size: 12px;
+    }
+    
+    .info-box {
+        background: #e7f3ff;
+        color: #0c5460;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #bee5eb;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+    
+    .home-link {
+        text-align: center;
+        margin-top: 20px;
+    }
+    
+    .home-link a {
+        color: #667eea;
+        text-decoration: none;
+        font-size: 14px;
+    }
+    
+    .home-link a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block bodyclass %}logged-out{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block content %}
+<div class="logout-container">
+    <div class="logout-header">
+        <div class="logout-icon">👋</div>
+        <h1>Successfully Logged Out</h1>
+        <p>You have been successfully logged out of the administration panel.</p>
+    </div>
+    
+    <div class="message-box">
+        <h3>What happens next?</h3>
+        <p>You have been successfully logged out of your account. For security reasons, your session has been terminated.</p>
+        
+        <h3>Security notes:</h3>
+        <ul>
+            <li>Your session has been completely closed</li>
+            <li>You'll need to log in again to access the admin panel</li>
+            <li>Any unsaved changes have been lost</li>
+            <li>Your login credentials remain secure</li>
+        </ul>
+    </div>
+    
+    <div class="info-box">
+        <strong>Security reminder:</strong> Always log out when you're done using the administration panel, 
+        especially on shared or public computers.
+    </div>
+    
+    <a href="{% url 'admin:login' %}" class="login-button">
+        Log In Again
+    </a>
+    
+    <div class="home-link">
+        <a href="{% url 'home' %}">← Return to Homepage</a>
+    </div>
+    
+    <div class="form-footer">
+        <p>CamExp Administration Portal</p>
+        <p>Secure logout completed</p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add some subtle effects
+    const logoutIcon = document.querySelector('.logout-icon');
+    const container = document.querySelector('.logout-container');
+    
+    // Add a subtle entrance animation
+    container.style.opacity = '0';
+    container.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+        container.style.transition = 'all 0.6s ease-out';
+        container.style.opacity = '1';
+        container.style.transform = 'translateY(0)';
+    }, 100);
+    
+    // Add a subtle wave effect to the logout icon
+    logoutIcon.style.animation = 'wave 2s ease-in-out infinite';
+    
+    // Add CSS animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes wave {
+            0%, 100% {
+                transform: rotate(0deg);
+            }
+            25% {
+                transform: rotate(-10deg);
+            }
+            75% {
+                transform: rotate(10deg);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Auto-redirect to login after 10 seconds
+    setTimeout(() => {
+        window.location.href = "{% url 'admin:login' %}";
+    }, 10000);
+});
+</script>
+{% endblock %}

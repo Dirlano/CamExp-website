@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Profile</h1>
+<ul class="bg-white p-6 rounded shadow space-y-2">
+    <li><span class="font-medium">Username:</span> {{ profile.user.username }}</li>
+    <li><span class="font-medium">Type:</span> {{ profile.get_user_type_display }}</li>
+    {% if profile.bio %}
+    <li><span class="font-medium">Bio:</span> {{ profile.bio }}</li>
+    {% endif %}
+    {% if profile.location %}
+    <li><span class="font-medium">Location:</span> {{ profile.location }}</li>
+    {% endif %}
+    <li>
+        <a href="{% url 'edit_profile' %}" class="text-blue-600 hover:underline">Edit profile</a>
+    </li>
+ </ul>
+{% endblock %}

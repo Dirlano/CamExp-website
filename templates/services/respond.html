@@ -1,0 +1,784 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Respond to Request{% endblock %}
+{% block content %}
+<!-- Header Section -->
+<section class="bg-gradient-to-br from-info to-blue-500 text-white py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Respond to Request</h1>
+        <p class="text-xl text-blue-100 max-w-2xl mx-auto">
+            Submit your proposal and connect with potential clients
+        </p>
+    </div>
+</section>
+
+<!-- Request Details & Response Form -->
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Response Form -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <!-- Form Header -->
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-info/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-reply text-2xl text-info"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Submit Your Proposal</h2>
+                    <p class="text-gray-600">Show the client why you're the perfect expert for this project</p>
+                </div>
+
+                <!-- Response Form -->
+                <form method="post" id="response-form" class="space-y-8">
+                    {% csrf_token %}
+                    <input type="hidden" name="request_id" value="{{ request.id }}">
+
+                    <!-- Proposal Title -->
+                    <div>
+                        <label for="proposal_title" class="block text-sm font-medium text-gray-700 mb-2">
+                            Proposal Title <span class="text-error">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="proposal_title" 
+                            name="proposal_title" 
+                            required
+                            maxlength="100"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200"
+                            placeholder="e.g., Professional Web Development Solution with Modern Design"
+                        >
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-xs text-gray-500">Make it compelling and specific to the project</span>
+                            <span id="title-counter" class="text-xs text-gray-500">0/100</span>
+                        </div>
+                    </div>
+
+                    <!-- Executive Summary -->
+                    <div>
+                        <label for="executive_summary" class="block text-sm font-medium text-gray-700 mb-2">
+                            Executive Summary <span class="text-error">*</span>
+                        </label>
+                        <textarea 
+                            id="executive_summary" 
+                            name="executive_summary" 
+                            rows="4"
+                            required
+                            maxlength="300"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200 resize-none"
+                            placeholder="Provide a compelling overview of your approach and why you're the best choice for this project..."
+                        ></textarea>
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-xs text-gray-500">Brief overview of your approach and value proposition</span>
+                            <span id="summary-counter" class="text-xs text-gray-500">0/300</span>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Proposal -->
+                    <div>
+                        <label for="detailed_proposal" class="block text-sm font-medium text-gray-700 mb-2">
+                            Detailed Proposal <span class="text-error">*</span>
+                        </label>
+                        <div class="border border-gray-300 rounded-lg">
+                            <div class="border-b border-gray-300 p-3 bg-gray-50">
+                                <div class="flex items-center space-x-2">
+                                    <button type="button" onclick="formatText('bold')" class="p-2 hover:bg-gray-200 rounded">
+                                        <i class="fa-solid fa-bold"></i>
+                                    </button>
+                                    <button type="button" onclick="formatText('italic')" class="p-2 hover:bg-gray-200 rounded">
+                                        <i class="fa-solid fa-italic"></i>
+                                    </button>
+                                    <button type="button" onclick="formatText('underline')" class="p-2 hover:bg-gray-200 rounded">
+                                        <i class="fa-solid fa-underline"></i>
+                                    </button>
+                                    <div class="w-px h-6 bg-gray-300"></div>
+                                    <button type="button" onclick="formatText('ul')" class="p-2 hover:bg-gray-200 rounded">
+                                        <i class="fa-solid fa-list-ul"></i>
+                                    </button>
+                                    <button type="button" onclick="formatText('ol')" class="p-2 hover:bg-gray-200 rounded">
+                                        <i class="fa-solid fa-list-ol"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div
+                                id="proposal-editor"
+                                contenteditable="true"
+                                class="p-4 min-h-48 focus:outline-none focus:ring-2 focus:ring-info focus:ring-inset"
+                                placeholder="Detail your approach, methodology, deliverables, and how you'll solve the client's problem..."
+                            ></div>
+                            <input type="hidden" id="detailed_proposal" name="detailed_proposal">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Use the toolbar above to format your text</p>
+                    </div>
+
+                    <!-- Pricing & Timeline -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Pricing & Timeline</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Pricing Type -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Pricing Structure</label>
+                                <div class="space-y-3">
+                                    <label class="flex items-center">
+                                        <input type="radio" name="pricing_type" value="fixed" class="mr-3" checked>
+                                        <span>Fixed Price</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="pricing_type" value="hourly" class="mr-3">
+                                        <span>Hourly Rate</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="pricing_type" value="milestone" class="mr-3">
+                                        <span>Milestone-based</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Amount -->
+                            <div>
+                                <label for="proposed_amount" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Proposed Amount (FCFA) <span class="text-error">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input
+                                        type="number"
+                                        id="proposed_amount"
+                                        name="proposed_amount"
+                                        required
+                                        min="100"
+                                        step="100"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200"
+                                        placeholder="Enter amount"
+                                    >
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                        <span class="text-gray-500">FCFA</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Timeline -->
+                            <div>
+                                <label for="estimated_timeline" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Estimated Timeline <span class="text-error">*</span>
+                                </label>
+                                <select
+                                    id="estimated_timeline"
+                                    name="estimated_timeline"
+                                    required
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200"
+                                >
+                                    <option value="">Select timeline</option>
+                                    <option value="1-3_days">1-3 days</option>
+                                    <option value="1_week">1 week</option>
+                                    <option value="2_weeks">2 weeks</option>
+                                    <option value="1_month">1 month</option>
+                                    <option value="2_months">2 months</option>
+                                    <option value="3_months">3 months</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                            </div>
+
+                            <!-- Custom Timeline -->
+                            <div id="custom-timeline" class="hidden">
+                                <label for="custom_timeline_text" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Custom Timeline Description
+                                </label>
+                                <input
+                                    type="text"
+                                    id="custom_timeline_text"
+                                    name="custom_timeline_text"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200"
+                                    placeholder="e.g., 6 weeks with 2-week sprints"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Milestones (if milestone-based pricing) -->
+                    <div id="milestones-section" class="hidden">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Project Milestones</h3>
+                        <div id="milestones-container" class="space-y-4">
+                            <div class="milestone-item border border-gray-200 rounded-lg p-4">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Milestone Name</label>
+                                        <input type="text" name="milestone_names[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-info" placeholder="e.g., Design Phase">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Amount (FCFA)</label>
+                                        <input type="number" name="milestone_amounts[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-info" placeholder="25000">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                                        <input type="date" name="milestone_dates[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-info">
+                                    </div>
+                                </div>
+                                <button type="button" onclick="removeMilestone(this)" class="mt-2 text-error hover:text-red-600 text-sm">
+                                    <i class="fa-solid fa-trash mr-1"></i>Remove
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addMilestone()" class="mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition-colors duration-200">
+                            <i class="fa-solid fa-plus mr-2"></i>Add Milestone
+                        </button>
+                    </div>
+
+                    <!-- Deliverables -->
+                    <div>
+                        <label for="deliverables" class="block text-sm font-medium text-gray-700 mb-2">
+                            Deliverables <span class="text-error">*</span>
+                        </label>
+                        <textarea
+                            id="deliverables"
+                            name="deliverables"
+                            rows="4"
+                            required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200 resize-none"
+                            placeholder="List all deliverables the client will receive (e.g., source code, documentation, design files, etc.)"
+                        ></textarea>
+                    </div>
+
+                    <!-- Additional Services -->
+                    <div>
+                        <label for="additional_services" class="block text-sm font-medium text-gray-700 mb-2">
+                            Additional Services
+                        </label>
+                        <textarea
+                            id="additional_services"
+                            name="additional_services"
+                            rows="3"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200 resize-none"
+                            placeholder="Any additional services you can offer (maintenance, support, training, etc.)"
+                        ></textarea>
+                    </div>
+
+                    <!-- Why Choose You -->
+                    <div>
+                        <label for="why_choose_me" class="block text-sm font-medium text-gray-700 mb-2">
+                            Why Choose Me? <span class="text-error">*</span>
+                        </label>
+                        <textarea
+                            id="why_choose_me"
+                            name="why_choose_me"
+                            rows="4"
+                            required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200 resize-none"
+                            placeholder="Highlight your unique qualifications, relevant experience, and what makes you the best choice for this project..."
+                        ></textarea>
+                    </div>
+
+                    <!-- Portfolio/Work Samples -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Portfolio/Work Samples
+                        </label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-info transition-colors duration-200">
+                            <div class="space-y-4">
+                                <i class="fa-solid fa-images text-4xl text-gray-400"></i>
+                                <div>
+                                    <p class="text-lg font-medium text-gray-700">Upload Work Samples</p>
+                                    <p class="text-sm text-gray-500">Showcase your relevant work (images, documents, links)</p>
+                                </div>
+                                <input
+                                    type="file"
+                                    id="work_samples"
+                                    name="work_samples"
+                                    multiple
+                                    accept="image/*,.pdf,.doc,.docx"
+                                    class="hidden"
+                                    onchange="handleWorkSamples(this)"
+                                >
+                                <label for="work_samples" class="bg-info hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 cursor-pointer">
+                                    Choose Files
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Work Samples Preview -->
+                        <div id="work-samples-preview" class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 hidden">
+                            <!-- Preview items will be displayed here -->
+                        </div>
+                    </div>
+
+                    <!-- Terms & Conditions -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <label class="flex items-start">
+                            <input type="checkbox" name="terms_accepted" required class="mr-3 mt-1">
+                            <span class="text-sm text-gray-700">
+                                I agree to the <a href="#" class="text-info hover:text-blue-600">Terms of Service</a> and
+                                <a href="#" class="text-info hover:text-blue-600">Privacy Policy</a>.
+                                I confirm that I can deliver the proposed work within the specified timeline and budget.
+                            </span>
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        <button type="submit" class="bg-info hover:bg-blue-600 text-white px-12 py-4 rounded-lg font-semibold text-xl transition-all duration-200 transform hover:-translate-y-1 shadow-lg hover:shadow-xl">
+                            <i class="fa-solid fa-paper-plane mr-3"></i>Submit Proposal
+                        </button>
+                        <p class="text-sm text-gray-500 mt-3">
+                            Your proposal will be sent to the client for review
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Request Details -->
+        <div class="lg:col-span-1">
+            <!-- Request Summary -->
+            <div class="bg-white rounded-2xl shadow-xl p-6 mb-6 sticky top-24">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Request Details</h3>
+
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">{{ request.title }}</h4>
+                        <p class="text-sm text-gray-600">{{ request.description|truncatewords:30 }}</p>
+                    </div>
+
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Category:</span>
+                            <span class="font-medium text-gray-800">{{ request.category|title }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Budget:</span>
+                            <span class="font-medium text-gray-800">{{ request.budget|default:"Not specified" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Timeline:</span>
+                            <span class="font-medium text-gray-800">{{ request.timeline|default:"Not specified" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Posted:</span>
+                            <span class="font-medium text-gray-800">{{ request.created_at|date:"M j, Y" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-gray-200">
+                        <a href="{% url 'service_detail' request.id %}" class="block text-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition-colors duration-200">
+                            <i class="fa-solid fa-eye mr-2"></i>View Full Request
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips Section -->
+            <div class="bg-blue-50 rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-blue-800 mb-4">
+                    <i class="fa-solid fa-lightbulb mr-2"></i>Proposal Tips
+                </h3>
+                <div class="space-y-3 text-sm text-blue-700">
+                    <div class="flex items-start">
+                        <i class="fa-solid fa-check mr-2 mt-1 text-blue-600"></i>
+                        <span>Be specific about your approach and methodology</span>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fa-solid fa-check mr-2 mt-1 text-blue-600"></i>
+                        <span>Highlight relevant experience and past projects</span>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fa-solid fa-check mr-2 mt-1 text-blue-600"></i>
+                        <span>Provide a clear timeline and deliverables</span>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fa-solid fa-check mr-2 mt-1 text-blue-600"></i>
+                        <span>Explain why you're the best choice for this project</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCounters();
+    initializePricingType();
+    initializeTimeline();
+    initializeRichTextEditor();
+});
+
+// Initialize character counters
+function initializeCounters() {
+    const titleInput = document.getElementById('proposal_title');
+    const summaryInput = document.getElementById('executive_summary');
+    const titleCounter = document.getElementById('title-counter');
+    const summaryCounter = document.getElementById('summary-counter');
+    
+    titleInput.addEventListener('input', function() {
+        titleCounter.textContent = `${this.value.length}/100`;
+    });
+    
+    summaryInput.addEventListener('input', function() {
+        summaryCounter.textContent = `${this.value.length}/300`;
+    });
+}
+
+// Initialize pricing type functionality
+function initializePricingType() {
+    const pricingRadios = document.querySelectorAll('input[name="pricing_type"]');
+    const milestonesSection = document.getElementById('milestones-section');
+    
+    pricingRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'milestone') {
+                milestonesSection.classList.remove('hidden');
+            } else {
+                milestonesSection.classList.add('hidden');
+            }
+        });
+    });
+}
+
+// Initialize timeline functionality
+function initializeTimeline() {
+    const timelineSelect = document.getElementById('estimated_timeline');
+    const customTimeline = document.getElementById('custom-timeline');
+    
+    timelineSelect.addEventListener('change', function() {
+        if (this.value === 'custom') {
+            customTimeline.classList.remove('hidden');
+        } else {
+            customTimeline.classList.add('hidden');
+        }
+    });
+}
+
+// Initialize rich text editor
+function initializeRichTextEditor() {
+    const editor = document.getElementById('proposal-editor');
+    const hiddenInput = document.getElementById('detailed_proposal');
+    
+    if (editor && hiddenInput) {
+        editor.addEventListener('input', function() {
+            hiddenInput.value = this.innerHTML;
+        });
+    }
+}
+
+// Rich text editor formatting
+function formatText(command) {
+    document.execCommand(command, false, null);
+    document.getElementById('proposal-editor').focus();
+}
+
+// Milestone management
+function addMilestone() {
+    const container = document.getElementById('milestones-container');
+    const milestoneItem = document.createElement('div');
+    milestoneItem.className = 'milestone-item border border-gray-200 rounded-lg p-4';
+    
+    milestoneItem.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Milestone Name</label>
+                <input type="text" name="milestone_names[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-info" placeholder="e.g., Design Phase">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Amount (FCFA)</label>
+                <input type="number" name="milestone_amounts[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-info" placeholder="25000">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                <input type="date" name="milestone_dates[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-info">
+            </div>
+        </div>
+        <button type="button" onclick="removeMilestone(this)" class="mt-2 text-error hover:text-red-600 text-sm">
+            <i class="fa-solid fa-trash mr-1"></i>Remove
+        </button>
+    `;
+    
+    container.appendChild(milestoneItem);
+}
+
+function removeMilestone(button) {
+    button.closest('.milestone-item').remove();
+}
+
+// Work samples handling
+function handleWorkSamples(input) {
+    const preview = document.getElementById('work-samples-preview');
+    const files = input.files;
+
+    if (files.length > 0) {
+        preview.classList.remove('hidden');
+        preview.innerHTML = '';
+
+        Array.from(files).forEach((file, index) => {
+            const div = document.createElement('div');
+            div.className = 'relative';
+
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    div.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview" class="w-full h-24 object-cover rounded-lg">
+                        <button type="button" onclick="removeWorkSample(${index})" class="absolute -top-2 -right-2 bg-error text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">
+                            ×
+                        </button>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                div.innerHTML = `
+                    <div class="w-full h-24 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-file text-2xl text-gray-400"></i>
+                    </div>
+                    <button type="button" onclick="removeWorkSample(${index})" class="absolute -top-2 -right-2 bg-error text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">
+                        ×
+                    </button>
+                `;
+            }
+
+            preview.appendChild(div);
+        });
+    }
+}
+
+function removeWorkSample(index) {
+    const preview = document.getElementById('work-samples-preview');
+    const items = preview.children;
+
+    if (items[index]) {
+        items[index].remove();
+
+        if (preview.children.length === 0) {
+            preview.classList.add('hidden');
+        }
+    }
+}
+
+// Form validation
+document.getElementById('response-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Validate required fields
+    const requiredFields = this.querySelectorAll('[required]');
+    let isValid = true;
+
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('border-error', 'ring-error');
+            isValid = false;
+        } else {
+            field.classList.remove('border-error', 'ring-error');
+        }
+    });
+
+    // Validate milestone fields if milestone pricing is selected
+    const pricingType = document.querySelector('input[name="pricing_type"]:checked').value;
+    if (pricingType === 'milestone') {
+        const milestoneNames = document.querySelectorAll('input[name="milestone_names[]"]');
+        const milestoneAmounts = document.querySelectorAll('input[name="milestone_amounts[]"]');
+        const milestoneDates = document.querySelectorAll('input[name="milestone_dates[]"]');
+        
+        milestoneNames.forEach((name, index) => {
+            if (!name.value.trim() || !milestoneAmounts[index].value.trim() || !milestoneDates[index].value.trim()) {
+                isValid = false;
+                name.classList.add('border-error');
+                milestoneAmounts[index].classList.add('border-error');
+                milestoneDates[index].classList.add('border-error');
+            }
+        });
+    }
+
+    if (!isValid) {
+        showToast('Please fill in all required fields', 'error');
+        return;
+    }
+
+    // Update hidden detailed proposal field
+    const editor = document.getElementById('proposal-editor');
+    const hiddenInput = document.getElementById('detailed_proposal');
+    if (editor && hiddenInput) {
+        hiddenInput.value = editor.innerHTML;
+    }
+
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i>Submitting...';
+    submitBtn.disabled = true;
+    
+    // Submit form
+    this.submit();
+});
+
+// Show toast notification
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-medium z-50 transform translate-x-full transition-transform duration-300 ${
+        type === 'success' ? 'bg-success' : 
+        type === 'error' ? 'bg-error' : 
+        'bg-info'
+    }`;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+        toast.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Animate out and remove
+    setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+
+// Auto-save draft
+function autoSaveDraft() {
+    const formData = {
+        title: document.getElementById('proposal_title').value,
+        summary: document.getElementById('executive_summary').value,
+        proposal: document.getElementById('proposal-editor').innerHTML,
+        deliverables: document.getElementById('deliverables').value,
+        additionalServices: document.getElementById('additional_services').value,
+        whyChooseMe: document.getElementById('why_choose_me').value,
+        pricingType: document.querySelector('input[name="pricing_type"]:checked')?.value,
+        amount: document.getElementById('proposed_amount').value,
+        timeline: document.getElementById('estimated_timeline').value,
+        customTimeline: document.getElementById('custom_timeline_text')?.value
+    };
+    
+    localStorage.setItem('proposal_draft', JSON.stringify(formData));
+}
+
+// Load draft
+function loadDraft() {
+    const draft = localStorage.getItem('proposal_draft');
+    if (draft) {
+        const formData = JSON.parse(draft);
+        
+        document.getElementById('proposal_title').value = formData.title || '';
+        document.getElementById('executive_summary').value = formData.summary || '';
+        document.getElementById('proposal-editor').innerHTML = formData.proposal || '';
+        document.getElementById('deliverables').value = formData.deliverables || '';
+        document.getElementById('additional_services').value = formData.additionalServices || '';
+        document.getElementById('why_choose_me').value = formData.whyChooseMe || '';
+        document.getElementById('proposed_amount').value = formData.amount || '';
+        document.getElementById('estimated_timeline').value = formData.timeline || '';
+        
+        if (formData.customTimeline) {
+            document.getElementById('custom_timeline_text').value = formData.customTimeline;
+        }
+        
+        if (formData.pricingType) {
+            document.querySelector(`input[value="${formData.pricingType}"]`).checked = true;
+            if (formData.pricingType === 'milestone') {
+                document.getElementById('milestones-section').classList.remove('hidden');
+            }
+            if (formData.pricingType === 'custom') {
+                document.getElementById('custom-timeline').classList.remove('hidden');
+            }
+        }
+        
+        // Update counters
+        document.getElementById('title-counter').textContent = `${formData.title.length}/100`;
+        document.getElementById('summary-counter').textContent = `${formData.summary.length}/300`;
+    }
+}
+
+// Auto-save every 30 seconds
+setInterval(autoSaveDraft, 30000);
+
+// Load draft on page load
+window.addEventListener('load', loadDraft);
+</script>
+
+<style>
+/* Form validation styles */
+.border-error {
+    border-color: #EF4444;
+}
+
+.ring-error {
+    --tw-ring-color: #EF4444;
+}
+
+/* Rich text editor styles */
+#proposal-editor:empty:before {
+    content: attr(placeholder);
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+#proposal-editor:focus:empty:before {
+    content: '';
+}
+
+/* Smooth animations */
+.transition-all {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Custom focus styles */
+.focus\:ring-info:focus {
+    --tw-ring-color: #0EA5E9;
+}
+
+.focus\:border-info:focus {
+    border-color: #0EA5E9;
+}
+
+/* Toast animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(100%);
+    }
+}
+
+/* Form hover effects */
+.form-input:hover {
+    border-color: #D1D5DB;
+}
+
+/* Button hover effects */
+.btn-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+/* Milestone styles */
+.milestone-item {
+    transition: all 0.2s ease-in-out;
+}
+
+.milestone-item:hover {
+    border-color: #0EA5E9;
+}
+
+/* Work samples preview */
+#work-samples-preview img {
+    transition: all 0.2s ease-in-out;
+}
+
+#work-samples-preview img:hover {
+    transform: scale(1.05);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .milestone-item .grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

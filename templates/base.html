@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CamExp - {% block title %}{% endblock %}</title>
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="icon" href="{% static 'img/favicon.ico' %}">
+    <script src="{% static 'js/fullcalendar.js' %}?v=1"></script>
+    <script src="{% static 'js/script.js' %}?v=1"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#3B82F6',
+                        'primary-light': '#93C5FD',
+                        'primary-dark': '#1D4ED8',
+                        success: '#10B981',
+                        error: '#EF4444',
+                        warning: '#FBBF24',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-sky-100 font-sans text-gray-800 min-h-screen flex flex-col">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo - Left Side -->
+                <div class="flex-shrink-0">
+                    <a href="/" class="flex items-center">
+                        <img src="{% static 'img/camex_logo.png' %}" alt="CamExp Logo" class="h-8 w-auto rounded-lg">
+                        <span class="ml-2 text-2xl font-bold text-primary">CamExp</span>
+                    </a>
+                </div>
+
+                <!-- Navigation Items - Right Side -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="{% url 'home' %}" class="text-gray-700 hover:text-primary transition-colors duration-200 font-medium">
+                        <i class="fa-solid fa-house mr-1"></i> Home
+                    </a>
+                    
+                    <a href="#features" class="text-gray-700 hover:text-primary transition-colors duration-200 font-medium">
+                        <i class="fa-solid fa-star mr-1"></i> Features
+                    </a>
+                    
+                    <a href="#about" class="text-gray-700 hover:text-primary transition-colors duration-200 font-medium">
+                        <i class="fa-solid fa-circle-info mr-1"></i> About Us
+                    </a>
+                    
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'services:list' %}" class="text-gray-700 hover:text-primary transition-colors duration-200 font-medium">
+                            <i class="fa-solid fa-screwdriver-wrench mr-1"></i> Services
+                        </a>
+                        <a href="{% url 'dashboard' %}" class="text-gray-700 hover:text-primary transition-colors duration-200 font-medium">
+                            <i class="fa-solid fa-calendar-days mr-1"></i> Dashboard
+                        </a>
+                        
+                        <!-- User Menu Dropdown -->
+                        <div class="relative ml-2" x-data="{ open: false }">
+                            <button @click="open = !open" class="flex items-center space-x-1 text-gray-700 hover:text-primary transition-colors duration-200 font-medium">
+                                <i class="fa-solid fa-user-circle text-xl"></i>
+                                <span>{{ user.username }}</span>
+                                <i class="fa-solid fa-chevron-down text-xs ml-1 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                            </button>
+                            
+                            <div x-show="open" @click.away="open = false" 
+                                 x-transition:enter="transition ease-out duration-100" 
+                                 x-transition:enter-start="transform opacity-0 scale-95" 
+                                 x-transition:enter-end="transform opacity-100 scale-100" 
+                                 x-transition:leave="transition ease-in duration-75" 
+                                 x-transition:leave-start="transform opacity-100 scale-100" 
+                                 x-transition:leave-end="transform opacity-0 scale-95" 
+                                 class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                                <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors duration-200">
+                                    <i class="fa-solid fa-user mr-2"></i>Profile
+                                </a>
+                                <a href="{% url 'notifications' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors duration-200">
+                                    <i class="fa-solid fa-bell mr-2"></i>Notifications
+                                </a>
+                                <div class="border-t border-gray-200 my-1"></div>
+                                <form method="post" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:text-error hover:bg-gray-50">
+                                        <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="text-gray-700 hover:text-primary transition-colors duration-200 font-medium">
+                            <i class="fa-solid fa-right-to-bracket mr-1"></i> Login
+                        </a>
+                        <a href="{% url 'register' %}" class="bg-primary hover:bg-primary-dark text-white px-4 py-1.5 rounded-lg font-medium transition-colors duration-200 text-sm">
+                            Sign Up
+                        </a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-700 hover:text-primary transition-colors duration-200">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile menu -->
+            <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="md:hidden border-t border-gray-200 py-4" x-data="{ mobileMenuOpen: false }">
+                <div class="space-y-2 px-2 pt-2 pb-3">
+                    <a href="{% url 'home' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
+                        <i class="fa-solid fa-house mr-2"></i> Home
+                    </a>
+                    <a href="#features" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
+                        <i class="fa-solid fa-star mr-2"></i> Features
+                    </a>
+                    <a href="#about" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
+                        <i class="fa-solid fa-circle-info mr-2"></i> About Us
+                    </a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'services:list' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
+                            <i class="fa-solid fa-screwdriver-wrench mr-2"></i> Services
+                        </a>
+                        <a href="{% url 'dashboard' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
+                            <i class="fa-solid fa-calendar-days mr-2"></i> Dashboard
+                        </a>
+                        <a href="{% url 'profile' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
+                            <i class="fa-solid fa-user mr-2"></i> Profile
+                        </a>
+                        <a href="{% url 'notifications' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
+                            <i class="fa-solid fa-bell mr-2"></i> Notifications
+                        </a>
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-error hover:bg-gray-50">
+                                <i class="fa-solid fa-right-from-bracket mr-2"></i> Logout
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
+                            <i class="fa-solid fa-right-to-bracket mr-2"></i> Login
+                        </a>
+                        <a href="{% url 'register' %}" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-primary hover:bg-primary-dark">
+                            <i class="fa-solid fa-user-plus mr-2"></i> Sign Up
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Company Info -->
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="{% static 'img/camex_logo.png' %}" alt="CamExp Logo" class="h-10 w-auto rounded-lg">
+                        <span class="text-2xl font-bold text-white">CamExp</span>
+                    </div>
+                    <p class="text-gray-300 mb-4 max-w-md">
+                        Connecting Cameroonian experts with clients seeking quality services. 
+                        Find skilled professionals or showcase your expertise on our trusted platform.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                            <i class="fab fa-facebook text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                            <i class="fab fa-linkedin text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 text-white">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'home' %}" class="text-gray-300 hover:text-white transition-colors duration-200">Home</a></li>
+                        <li><a href="{% url 'services:list' %}" class="text-gray-300 hover:text-white transition-colors duration-200">Browse Services</a></li>
+                        <li><a href="{% url 'register' %}" class="text-gray-300 hover:text-white transition-colors duration-200">Become an Expert</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">How It Works</a></li>
+                    </ul>
+                </div>
+
+                <!-- Support -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 text-white">Support</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Help Center</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Contact Us</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Section -->
+            <div class="border-t border-gray-700 mt-8 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 text-sm">
+                        &copy; 2025 CamExp. All rights reserved. Made by <i>kamla_dev</i> for <i>Cameroon</i>.
+                    </p>
+                    <div class="flex items-center space-x-4 mt-4 md:mt-0">
+                        <span class="text-gray-400 text-sm">Payment Methods:</span>
+                        <div class="flex space-x-2">
+                            <span class="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">MTN Mobile Money</span>
+                            <span class="bg-orange-500 text-white px-2 py-1 rounded text-xs font-medium">Orange Money</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Alpine.js for dropdown functionality -->
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add any additional JavaScript functionality here
+            console.log('CamExp loaded successfully!');
+        });
+    </script>
+</body>
+</html>

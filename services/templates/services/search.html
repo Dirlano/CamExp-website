@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Search Services{% endblock %}
+{% block content %}
+<h1 class="text-2xl mb-4">Search for Services</h1>
+
+<!-- Search Form -->
+<form method="post" action="{% url 'search' %}" class="mb-6">
+    {% csrf_token %}
+    <div class="flex">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search by title, description, or location..." class="flex-grow p-2 border border-gray-300 rounded-l">
+        <button type="submit" class="bg-blue-500 text-white p-2 rounded-r">Search</button>
+    </div>
+</form>
+
+<!-- Results -->
+{% if results %}
+    <h2 class="text-xl mb-2">Results:</h2>
+    <ul class="space-y-4">
+        {% for service in results %}
+        <li class="bg-white p-4 rounded shadow">
+            <h3 class="text-lg font-bold">{{ service.title }}</h3>
+            <p>{{ service.description|truncatewords:50 }}</p>
+            <p>Price: {{ service.price }} XAF</p>
+            <p>Location: {{ service.location }}</p>
+            <p>Expert: {{ service.expert.user.username }}</p>
+            <a href="{% url 'services:service_detail' service.id %}" class="text-blue-500 hover:underline">View Details</a>
+        </li>
+        {% endfor %}
+    </ul>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="{% url 'services:list' %}" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+            Browse All Services
+        </a>
+        <button onclick="clearSearch()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+            Clear Search
+        </button>
+    </div>
+{% else %}
+    <p>No results found. Try a different search.</p>
+{% endif %}
+{% endblock %}

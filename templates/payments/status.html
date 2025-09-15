@@ -1,0 +1,503 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Payment Status{% endblock %}
+{% block content %}
+<!-- Header Section -->
+<section class="bg-gradient-to-br from-success to-green-600 text-white py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Payment Status</h1>
+        <p class="text-xl text-green-100 max-w-2xl mx-auto">
+            Track your payment and view transaction details
+        </p>
+    </div>
+</section>
+
+<!-- Payment Status Content -->
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Payment Status Card -->
+    <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+        <!-- Status Header -->
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center
+                {% if payment.status == 'completed' %}bg-success text-white
+                {% elif payment.status == 'pending' %}bg-warning text-gray-900
+                {% elif payment.status == 'failed' %}bg-error text-white
+                {% else %}bg-gray-500 text-white{% endif %}">
+                {% if payment.status == 'completed' %}
+                    <i class="fa-solid fa-check text-3xl"></i>
+                {% elif payment.status == 'pending' %}
+                    <i class="fa-solid fa-clock text-3xl"></i>
+                {% elif payment.status == 'failed' %}
+                    <i class="fa-solid fa-times text-3xl"></i>
+                {% else %}
+                    <i class="fa-solid fa-question text-3xl"></i>
+                {% endif %}
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                {% if payment.status == 'completed' %}Payment Successful!
+                {% elif payment.status == 'pending' %}Payment Processing
+                {% elif payment.status == 'failed' %}Payment Failed
+                {% else %}Payment Status Unknown{% endif %}
+            </h2>
+            <p class="text-gray-600">
+                {% if payment.status == 'completed' %}
+                    Your payment has been processed successfully
+                {% elif payment.status == 'pending' %}
+                    We're processing your payment. This may take a few minutes.
+                {% elif payment.status == 'failed' %}
+                    There was an issue processing your payment. Please try again.
+                {% else %}
+                    Unable to determine payment status
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Payment Details -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Left Column -->
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Payment Information</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Transaction ID:</span>
+                            <span class="font-mono text-sm font-medium text-gray-800">{{ payment.transaction_id|default:"N/A" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Amount:</span>
+                            <span class="font-bold text-success text-xl">{{ payment.amount }} FCFA</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Payment Method:</span>
+                            <span class="font-medium text-gray-800">{{ payment.payment_method|title|default:"Not specified" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Date:</span>
+                            <span class="font-medium text-gray-800">{{ payment.created_at|date:"M j, Y g:i A" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Status:</span>
+                            <span class="px-3 py-1 rounded-full text-sm font-medium
+                                {% if payment.status == 'completed' %}bg-success/20 text-success
+                                {% elif payment.status == 'pending' %}bg-warning/20 text-warning
+                                {% elif payment.status == 'failed' %}bg-error/20 text-error
+                                {% else %}bg-gray-100 text-gray-600{% endif %}">
+                                {{ payment.status|title }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Details -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Service Details</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Service:</span>
+                            <span class="font-medium text-gray-800">{{ payment.service_request.title|default:"N/A" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Expert:</span>
+                            <span class="font-medium text-gray-800">{{ payment.expert.user.get_full_name|default:"N/A" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Category:</span>
+                            <span class="font-medium text-gray-800">{{ payment.service_request.category|title|default:"N/A" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <!-- Payment Breakdown -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Payment Breakdown</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Service Amount:</span>
+                            <span class="font-medium text-gray-800">{{ payment.service_amount|default:payment.amount }} FCFA</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Service Fee:</span>
+                            <span class="font-medium text-gray-800">{{ payment.service_fee|default:"0" }} FCFA</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Transaction Fee:</span>
+                            <span class="font-medium text-gray-800">{{ payment.transaction_fee|default:"0" }} FCFA</span>
+                        </div>
+                        <div class="border-t border-gray-200 pt-3">
+                            <div class="flex justify-between">
+                                <span class="text-lg font-semibold text-gray-800">Total:</span>
+                                <span class="text-2xl font-bold text-success">{{ payment.amount }} FCFA</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Next Steps -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Next Steps</h3>
+                    <div class="space-y-3">
+                        {% if payment.status == 'completed' %}
+                            <div class="flex items-start">
+                                <i class="fa-solid fa-check-circle text-success mr-3 mt-1"></i>
+                                <span class="text-sm text-gray-700">Payment confirmed. The expert has been notified.</span>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fa-solid fa-clock text-info mr-3 mt-1"></i>
+                                <span class="text-sm text-gray-700">Expect project updates within 24 hours.</span>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fa-solid fa-comments text-primary mr-3 mt-1"></i>
+                                <span class="text-sm text-gray-700">You can now chat with the expert about your project.</span>
+                            </div>
+                        {% elif payment.status == 'pending' %}
+                            <div class="flex items-start">
+                                <i class="fa-solid fa-clock text-warning mr-3 mt-1"></i>
+                                <span class="text-sm text-gray-700">Payment is being processed. Please wait.</span>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fa-solid fa-refresh text-info mr-3 mt-1"></i>
+                                <span class="text-sm text-gray-700">Refresh this page to check for updates.</span>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fa-solid fa-envelope text-primary mr-3 mt-1"></i>
+                                <span class="text-sm text-gray-700">You'll receive an email confirmation shortly.</span>
+                            </div>
+                        {% elif payment.status == 'failed' %}
+                            <div class="flex items-start">
+                                <i class="fa-solid fa-exclamation-triangle text-error mr-3 mt-1"></i>
+                                <span class="text-sm text-gray-700">Payment processing failed. Please try again.</span>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fa-solid fa-credit-card text-primary mr-3 mt-1"></i>
+                                <span class="text-sm text-gray-700">Check your payment method and try again.</span>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fa-solid fa-headset text-info mr-3 mt-1"></i>
+                                <span class="text-sm text-gray-700">Contact support if the issue persists.</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-8 pt-8 border-t border-gray-200">
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                {% if payment.status == 'completed' %}
+                    <a href="{% url 'chat_room' payment.expert.user.id %}" class="bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 text-center">
+                        <i class="fa-solid fa-comments mr-2"></i>Chat with Expert
+                    </a>
+                    <a href="{% url 'service_detail' payment.service_request.id %}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-medium transition-all duration-200 text-center">
+                        <i class="fa-solid fa-eye mr-2"></i>View Service Details
+                    </a>
+                {% elif payment.status == 'pending' %}
+                    <button onclick="refreshPage()" class="bg-info hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200">
+                        <i class="fa-solid fa-refresh mr-2"></i>Refresh Status
+                    </button>
+                    <a href="{% url 'payment_initiate' payment.service_request.id %}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-medium transition-all duration-200 text-center">
+                        <i class="fa-solid fa-credit-card mr-2"></i>Try Again
+                    </a>
+                {% elif payment.status == 'failed' %}
+                    <a href="{% url 'payment_initiate' payment.service_request.id %}" class="bg-error hover:bg-red-600 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 text-center">
+                        <i class="fa-solid fa-redo mr-2"></i>Retry Payment
+                    </a>
+                    <a href="{% url 'contact_support' %}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-medium transition-all duration-200 text-center">
+                        <i class="fa-solid fa-headset mr-2"></i>Contact Support
+                    </a>
+                {% endif %}
+                
+                <a href="{% url 'user_dashboard' %}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-medium transition-all duration-200 text-center">
+                    <i class="fa-solid fa-home mr-2"></i>Go to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Information -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Payment Timeline -->
+        <div class="bg-white rounded-2xl shadow-xl p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fa-solid fa-history mr-2 text-primary"></i>Payment Timeline
+            </h3>
+            <div class="space-y-4">
+                <div class="flex items-start">
+                    <div class="w-3 h-3 bg-success rounded-full mt-2 mr-3"></div>
+                    <div>
+                        <p class="font-medium text-gray-800">Payment Initiated</p>
+                        <p class="text-sm text-gray-500">{{ payment.created_at|date:"M j, Y g:i A" }}</p>
+                    </div>
+                </div>
+                
+                {% if payment.status == 'completed' %}
+                    <div class="flex items-start">
+                        <div class="w-3 h-3 bg-success rounded-full mt-2 mr-3"></div>
+                        <div>
+                            <p class="font-medium text-gray-800">Payment Confirmed</p>
+                            <p class="text-sm text-gray-500">{{ payment.updated_at|date:"M j, Y g:i A" }}</p>
+                        </div>
+                    </div>
+                {% elif payment.status == 'pending' %}
+                    <div class="flex items-start">
+                        <div class="w-3 h-3 bg-warning rounded-full mt-2 mr-3"></div>
+                        <div>
+                            <p class="font-medium text-gray-800">Processing Payment</p>
+                            <p class="text-sm text-gray-500">In progress...</p>
+                        </div>
+                    </div>
+                {% elif payment.status == 'failed' %}
+                    <div class="flex items-start">
+                        <div class="w-3 h-3 bg-error rounded-full mt-2 mr-3"></div>
+                        <div>
+                            <p class="font-medium text-gray-800">Payment Failed</p>
+                            <p class="text-sm text-gray-500">{{ payment.updated_at|date:"M j, Y g:i A" }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Support Information -->
+        <div class="bg-white rounded-2xl shadow-xl p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fa-solid fa-headset mr-2 text-primary"></i>Need Help?
+            </h3>
+            <div class="space-y-4">
+                <div>
+                    <p class="text-sm text-gray-600 mb-3">
+                        If you have any questions about your payment or need assistance, we're here to help.
+                    </p>
+                    <div class="space-y-2">
+                        <div class="flex items-center text-sm text-gray-700">
+                            <i class="fa-solid fa-envelope mr-2 text-primary"></i>
+                            <span>support@camexp.com</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-700">
+                            <i class="fa-solid fa-phone mr-2 text-primary"></i>
+                            <span>+237 XXX XXX XXX</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-700">
+                            <i class="fa-solid fa-clock mr-2 text-primary"></i>
+                            <span>24/7 Support</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'contact_support' %}" class="block w-full bg-primary hover:bg-primary-dark text-white text-center py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200">
+                    Contact Support
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Security Notice -->
+    <div class="mt-8 bg-blue-50 rounded-xl p-6">
+        <h3 class="text-lg font-semibold text-blue-800 mb-4">
+            <i class="fa-solid fa-shield-halved mr-2"></i>Payment Security
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-blue-700">
+            <div class="flex items-start">
+                <i class="fa-solid fa-lock mr-2 mt-1 text-blue-600"></i>
+                <span>All payments are encrypted and secure</span>
+            </div>
+            <div class="flex items-start">
+                <i class="fa-solid fa-shield-alt mr-2 mt-1 text-blue-600"></i>
+                <span>PCI DSS compliant payment processing</span>
+            </div>
+            <div class="flex items-start">
+                <i class="fa-solid fa-user-shield mr-2 mt-1 text-blue-600"></i>
+                <span>Your financial information is protected</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh for pending payments
+let autoRefreshInterval;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentStatus = '{{ payment.status }}';
+    
+    if (paymentStatus === 'pending') {
+        // Auto-refresh every 30 seconds for pending payments
+        autoRefreshInterval = setInterval(function() {
+            checkPaymentStatus();
+        }, 30000);
+        
+        // Show auto-refresh notification
+        showNotification('Auto-refreshing every 30 seconds to check payment status', 'info');
+    }
+});
+
+// Check payment status
+function checkPaymentStatus() {
+    fetch(`{% url 'payment_status' payment.id %}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status !== 'pending') {
+                // Payment status changed, refresh page
+                clearInterval(autoRefreshInterval);
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error checking payment status:', error);
+        });
+}
+
+// Manual refresh
+function refreshPage() {
+    window.location.reload();
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-medium z-50 transform translate-x-full transition-transform duration-300 ${
+        type === 'success' ? 'bg-success' : 
+        type === 'error' ? 'bg-error' : 
+        type === 'warning' ? 'bg-warning text-gray-900' :
+        'bg-info'
+    }`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Animate out and remove
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 5000);
+}
+
+// Copy transaction ID to clipboard
+function copyTransactionId() {
+    const transactionId = '{{ payment.transaction_id }}';
+    if (transactionId && transactionId !== 'N/A') {
+        navigator.clipboard.writeText(transactionId).then(function() {
+            showNotification('Transaction ID copied to clipboard', 'success');
+        }).catch(function() {
+            showNotification('Failed to copy transaction ID', 'error');
+        });
+    }
+}
+
+// Download receipt (placeholder function)
+function downloadReceipt() {
+    // This would generate and download a PDF receipt
+    showNotification('Receipt download feature coming soon', 'info');
+}
+
+// Print payment details
+function printPaymentDetails() {
+    window.print();
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+    }
+});
+</script>
+
+<style>
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+        color: black !important;
+    }
+    
+    .bg-white {
+        background: white !important;
+        box-shadow: none !important;
+    }
+}
+
+/* Status-specific animations */
+.status-pending {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Hover effects */
+.action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+/* Timeline styles */
+.timeline-item {
+    position: relative;
+}
+
+.timeline-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 20px;
+    bottom: -20px;
+    width: 2px;
+    background: #E5E7EB;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .timeline-item::after {
+        display: none;
+    }
+}
+
+/* Smooth transitions */
+.transition-all {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+</style>
+{% endblock %}

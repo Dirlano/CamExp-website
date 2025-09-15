@@ -1,0 +1,286 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Color Variables */
+    :root {
+        --primary: #3B82F6;
+        --primary-dark: #1D4ED8;
+        --white: #FFFFFF;
+        --light-bg: #F8FAFF;
+        --warning: #F59E0B;
+    }
+
+    /* Header Styling */
+    #header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        height: 4rem;
+        display: flex;
+        align-items: center;
+        padding: 0 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Branding */
+    #branding {
+        display: flex;
+        align-items: center;
+        flex: 1;
+    }
+    
+    #branding h1 {
+        margin: 0;
+        padding: 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+    
+    #branding a {
+        display: flex;
+        align-items: center;
+        color: white;
+        text-decoration: none;
+        gap: 0.75rem;
+    }
+    
+    #branding a:hover {
+        opacity: 0.9;
+    }
+    
+    #branding img {
+        height: 1.5rem;
+        width: auto;
+        border-radius: 0.25rem;
+    }
+    
+    #branding .site-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    #branding .admin-label {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.8rem;
+        margin-left: 0.4rem;
+    }
+    
+    /* User Tools */
+    #user-tools {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        font-size: 0.875rem;
+    }
+    
+    #user-tools a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        transition: opacity 0.2s;
+    }
+    
+    #user-tools a:hover {
+        opacity: 0.9;
+        text-decoration: underline;
+    }
+    
+    #user-tools a:first-child {
+        font-weight: 600;
+    }
+
+    /* Main Content */
+    #content {
+        background: var(--white);
+        padding: 1.5rem;
+        margin: 1.5rem 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Buttons */
+    .button, input[type="submit"], input[type="button"], 
+    .submit-row input, a.button, .submit-row input.default {
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    
+    .button:hover, input[type="submit"]:hover, 
+    input[type="button"]:hover, .submit-row input:hover, 
+    a.button:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .button.default, input[type="submit"].default, 
+    .submit-row input.default {
+        background: var(--warning);
+    }
+    
+    .button.default:hover, input[type="submit"].default:hover, 
+    .submit-row input.default:hover {
+        background: #e0920a;
+    }
+
+    /* Form Elements */
+    input[type="text"], input[type="password"], 
+    input[type="email"], input[type="url"],
+    input[type="number"], input[type="tel"], 
+    textarea, select, .vTextField {
+        border: 2px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 8px 12px;
+        width: 100%;
+        max-width: 24rem;
+        transition: all 0.2s;
+    }
+    
+    input[type="text"]:focus, input[type="password"]:focus, 
+    input[type="email"]:focus, input[type="url"]:focus, 
+    input[type="number"]:focus, input[type="tel"]:focus,
+    textarea:focus, select:focus, .vTextField:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        outline: none;
+    }
+
+    /* Tables */
+    #changelist table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 1rem 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    #changelist thead th {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        font-weight: 600;
+        padding: 12px 16px;
+        text-align: left;
+    }
+    
+    #changelist tbody td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f0f2f5;
+    }
+    
+    #changelist tbody tr:hover {
+        background-color: rgba(59, 130, 246, 0.05);
+    }
+
+    /* Module Styles */
+    .module h2, .module caption, .inline-group h2 {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        font-weight: 600;
+        padding: 12px 16px;
+        border-radius: 6px 6px 0 0;
+    }
+
+    .module, .inline-group {
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Submit Row */
+    .submit-row {
+        padding: 12px 16px;
+        background: var(--white);
+        border-top: 1px solid #e5e7eb;
+        margin: 0;
+        border-radius: 0 0 6px 6px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    /* Breadcrumbs */
+    .breadcrumbs {
+        background: rgba(59, 130, 246, 0.1);
+        padding: 8px 16px;
+        margin: 0 0 20px 0;
+        border-radius: 6px;
+        border-left: 4px solid var(--primary);
+    }
+
+    .breadcrumbs a {
+        color: var(--primary);
+        font-weight: 500;
+    }
+
+    .breadcrumbs a:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+
+    /* Override any remaining green elements */
+    .addlink, .addlink:link, .addlink:visited,
+    .viewlink, .viewlink:link, .viewlink:visited,
+    .changelink, .changelink:link, .changelink:visited,
+    .inlinechangelink, .inlinechangelink:link, .inlinechangelink:visited {
+        color: var(--primary) !important;
+    }
+
+    .addlink:hover, .viewlink:hover, .changelink:hover, 
+    .inlinechangelink:hover, .deletelink:hover {
+        color: var(--primary-dark) !important;
+    }
+
+    .object-tools a:link, .object-tools a:visited {
+        background: var(--primary);
+        color: white !important;
+    }
+
+    .object-tools a:hover {
+        background: var(--primary-dark);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        #header {
+            padding: 0 10px;
+        }
+        
+        .submit-row {
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .submit-row input {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}" class="flex items-center">
+        <img src="{% static 'img/camex_logo.png' %}" alt="{{ site_header|default:_('Django administration') }}">
+        <span class="site-name">CamExp</span>
+        <span class="admin-label">Admin</span>
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

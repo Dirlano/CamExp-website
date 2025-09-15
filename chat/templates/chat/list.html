@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Chats{% endblock %}
+{% block content %}
+<!-- Header Section -->
+<section class="bg-gradient-to-br from-success to-green-500 text-white py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Your Chats</h1>
+        <p class="text-xl text-green-100 max-w-2xl mx-auto">
+            Connect with clients and experts through our messaging system
+        </p>
+    </div>
+</section>
+
+<!-- Chat List Content -->
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- Search Bar -->
+        <div class="p-6 border-b border-gray-200">
+            <div class="relative">
+                <input 
+                    type="text" 
+                    id="chat-search" 
+                    placeholder="Search chats and messages..." 
+                    class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent transition-all duration-200"
+                >
+                <i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            </div>
+        </div>
+
+        <!-- Chat List -->
+        <div class="divide-y divide-gray-200">
+            {% if chat_list %}
+                {% for chat in chat_list %}
+                    <div class="chat-item p-6 hover:bg-gray-50 transition-colors duration-200 cursor-pointer" data-partner-id="{{ chat.partner.id }}">
+                        <div class="flex items-center space-x-4">
+                            <!-- Partner Avatar -->
+                            <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
+                                {% if chat.partner.profile_picture %}
+                                    <img src="{{ chat.partner.profile_picture.url }}" alt="{{ chat.partner.user.get_full_name }}" class="w-12 h-12 rounded-full object-cover">
+                                {% else %}
+                                    {{ chat.partner.user.first_name|first }}{{ chat.partner.user.last_name|first }}
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Chat Info -->
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h3 class="text-lg font-semibold text-gray-800 truncate">
+                                        {{ chat.partner.user.get_full_name|default:chat.partner.user.username }}
+                                    </h3>
+                                    <div class="flex items-center space-x-2">
+                                        {% if chat.unread_count > 0 %}
+                                            <span class="bg-success text-white text-xs font-bold px-2 py-1 rounded-full">
+                                                {{ chat.unread_count }}
+                                            </span>
+                                        {% endif %}
+                                        {% if chat.last_activity %}
+                                            <span class="text-sm text-gray-500">
+                                                {{ chat.last_activity|timesince }} ago
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Last Message Preview -->
+                                {% if chat.last_message %}
+                                    <p class="text-gray-600 truncate">
+                                        {% if chat.last_message.sender == user.profile %}
+                                            <span class="text-gray-500">You:</span>
+                                        {% endif %}
+                                        {{ chat.last_message.content|truncatechars:80 }}
+                                    </p>
+                                {% else %}
+                                    <p class="text-gray-400 italic">No messages yet</p>
+                                {% endif %}
+                                
+                                <!-- Partner Type Badge -->
+                                <div class="mt-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        {% if chat.partner.user_type == 'expert' %}bg-blue-100 text-blue-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                        {{ chat.partner.user_type|title }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="flex items-center space-x-2">
+                                <a href="{% url 'chat_room' chat.partner.id %}" class="bg-success hover:bg-green-600 text-white p-2 rounded-lg transition-colors duration-200">
+                                    <i class="fa-solid fa-comments"></i>
+                                </a>
+                                <button onclick="markChatRead({{ chat.partner.id }})" class="bg-gray-100 hover:bg-gray-200 text-gray-600 p-2 rounded-lg transition-colors duration-200">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <!-- Empty State -->
+                <div class="p-12 text-center">
+                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fa-solid fa-comments text-4xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">No Chats Yet</h3>
+                    <p class="text-gray-600 mb-6">
+                        Start connecting with other users by browsing services or creating requests.
+                    </p>
+                    <div class="space-x-4">
+                        <a href="{% url 'services:list' %}" class="bg-primary hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+                            <i class="fa-solid fa-search mr-2"></i>Browse Services
+                        </a>
+                        <a href="{% url 'create_request' %}" class="bg-success hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+                            <i class="fa-solid fa-plus mr-2"></i>Create Request
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="fixed bottom-6 right-6">
+    <div class="flex flex-col space-y-3">
+        <!-- New Chat Button -->
+        <button onclick="showNewChatModal()" class="bg-success hover:bg-green-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1">
+            <i class="fa-solid fa-plus text-xl"></i>
+        </button>
+        
+        <!-- Scroll to Top Button -->
+        <button onclick="scrollToTop()" id="scroll-top-btn" class="bg-primary hover:bg-blue-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 hidden">
+            <i class="fa-solid fa-arrow-up text-xl"></i>
+        </button>
+    </div>
+</div>
+
+<!-- New Chat Modal -->
+<div id="new-chat-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-gray-800">Start New Chat</h3>
+                <button onclick="hideNewChatModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="chat-search-input" class="block text-sm font-medium text-gray-700 mb-2">Search Users</label>
+                    <input 
+                        type="text" 
+                        id="chat-search-input" 
+                        placeholder="Search by name or username..." 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent transition-all duration-200"
+                    >
+                </div>
+                
+                <div id="search-results" class="max-h-64 overflow-y-auto space-y-2">
+                    <!-- Search results will be populated here -->
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-end space-x-3">
+                <button onclick="hideNewChatModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Chat search functionality
+document.getElementById('chat-search').addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    const chatItems = document.querySelectorAll('.chat-item');
+    
+    chatItems.forEach(item => {
+        const partnerName = item.querySelector('h3').textContent.toLowerCase();
+        const lastMessage = item.querySelector('p').textContent.toLowerCase();
+        
+        if (partnerName.includes(query) || lastMessage.includes(query)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+});
+
+// Mark chat as read
+function markChatRead(partnerId) {
+    fetch(`/chat/api/mark_read/${partnerId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Remove unread count badge
+            const chatItem = document.querySelector(`[data-partner-id="${partnerId}"]`);
+            const unreadBadge = chatItem.querySelector('.bg-success');
+            if (unreadBadge) {
+                unreadBadge.remove();
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error marking chat as read:', error);
+    });
+}
+
+// New chat modal functionality
+function showNewChatModal() {
+    document.getElementById('new-chat-modal').classList.remove('hidden');
+    document.getElementById('chat-search-input').focus();
+}
+
+function hideNewChatModal() {
+    document.getElementById('new-chat-modal').classList.add('hidden');
+    document.getElementById('chat-search-input').value = '';
+    document.getElementById('search-results').innerHTML = '';
+}
+
+// Search users for new chat
+document.getElementById('chat-search-input').addEventListener('input', function() {
+    const query = this.value.trim();
+    if (query.length < 2) {
+        document.getElementById('search-results').innerHTML = '';
+        return;
+    }
+    
+    // Simulate search (replace with actual API call)
+    setTimeout(() => {
+        searchUsers(query);
+    }, 300);
+});
+
+function searchUsers(query) {
+    // This would be replaced with an actual API call
+    const results = document.getElementById('search-results');
+    results.innerHTML = '<p class="text-gray-500 text-center py-4">Search functionality coming soon...</p>';
+}
+
+// Scroll to top functionality
+window.addEventListener('scroll', function() {
+    const scrollTopBtn = document.getElementById('scroll-top-btn');
+    if (window.pageYOffset > 300) {
+        scrollTopBtn.classList.remove('hidden');
+    } else {
+        scrollTopBtn.classList.add('hidden');
+    }
+});
+
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+// Chat item click handler
+document.querySelectorAll('.chat-item').forEach(item => {
+    item.addEventListener('click', function() {
+        const partnerId = this.dataset.partnerId;
+        window.location.href = `/chat/${partnerId}/`;
+    });
+});
+
+// Close modal when clicking outside
+document.getElementById('new-chat-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideNewChatModal();
+    }
+});
+</script>
+
+<style>
+/* Smooth animations */
+.transition-all {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Chat item hover effects */
+.chat-item:hover {
+    background-color: #F9FAFB;
+}
+
+/* Modal animations */
+#new-chat-modal {
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Scroll button animations */
+#scroll-top-btn {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Search input focus styles */
+.focus\:ring-success:focus {
+    --tw-ring-color: #10B981;
+}
+
+.focus\:border-success:focus {
+    border-color: #10B981;
+}
+
+/* Button hover effects */
+.btn-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .chat-item {
+        padding: 1rem;
+    }
+    
+    .chat-item .flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .chat-item .flex-1 {
+        width: 100%;
+        margin-top: 1rem;
+    }
+}
+</style>
+{% endblock %}

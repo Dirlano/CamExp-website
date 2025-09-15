@@ -1,0 +1,372 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .module {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    
+    .module h2, .module caption {
+        background: var(--primary);
+        color: white;
+        padding: 15px;
+        margin: 0;
+        font-size: 18px;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .module table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .module table th {
+        background: var(--light);
+        color: #333;
+        font-weight: 600;
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 2px solid var(--primary);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .module table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        vertical-align: top;
+    }
+    
+    .module table tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .module table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .object-tools {
+        margin-bottom: 20px;
+        text-align: right;
+    }
+    
+    .object-tools a {
+        display: inline-block;
+        margin-left: 10px;
+        padding: 10px 20px;
+        background: var(--success);
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: background 0.3s;
+    }
+    
+    .object-tools a:hover {
+        background: #218838;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .object-tools a.addlink {
+        background: var(--success);
+    }
+    
+    .object-tools a.addlink:hover {
+        background: #218838;
+    }
+    
+    .actions {
+        background: var(--light);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+    }
+    
+    .actions select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-right: 10px;
+        min-width: 200px;
+    }
+    
+    .actions button {
+        padding: 8px 16px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    
+    .actions button:hover {
+        background: var(--secondary);
+    }
+    
+    .actions button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+    
+    .paginator {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        text-align: center;
+        border: 1px solid #ddd;
+    }
+    
+    .paginator a, .paginator .this-page {
+        display: inline-block;
+        padding: 8px 12px;
+        margin: 0 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-decoration: none;
+        color: var(--primary);
+        transition: all 0.3s;
+    }
+    
+    .paginator a:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+    
+    .paginator .this-page {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+    
+    .paginator .showall {
+        margin-left: 20px;
+    }
+    
+    .search {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+    }
+    
+    .search h2 {
+        margin: 0 0 15px 0;
+        color: #333;
+        font-size: 16px;
+    }
+    
+    .search input[type="text"] {
+        width: 100%;
+        max-width: 400px;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        margin-right: 10px;
+    }
+    
+    .search input[type="submit"] {
+        padding: 10px 20px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    
+    .search input[type="submit"]:hover {
+        background: var(--secondary);
+    }
+    
+    .filters {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+    }
+    
+    .filters h2 {
+        margin: 0 0 15px 0;
+        color: #333;
+        font-size: 16px;
+    }
+    
+    .filters select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-right: 15px;
+        min-width: 150px;
+    }
+    
+    .filters input[type="submit"] {
+        padding: 8px 16px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    
+    .filters input[type="submit"]:hover {
+        background: var(--secondary);
+    }
+    
+    .field-status {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-open {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-completed {
+        background: #cce5ff;
+        color: #004085;
+    }
+    
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-failed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-in_progress {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .field-amount {
+        font-weight: 600;
+        color: var(--success);
+    }
+    
+    .field-score {
+        font-weight: 600;
+        color: var(--warning);
+    }
+    
+    .field-timestamp {
+        color: #666;
+        font-size: 12px;
+    }
+    
+    .field-preview {
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .checkbox-column {
+        text-align: center;
+    }
+    
+    .checkbox-column input[type="checkbox"] {
+        transform: scale(1.2);
+    }
+    
+    .empty-list {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+        font-style: italic;
+    }
+    
+    .empty-list:before {
+        content: "📭";
+        font-size: 48px;
+        display: block;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block object-tools %}
+{% if has_add_permission %}
+  <ul class="object-tools">
+    {% block object-tools-items %}
+      {% url cl.opts|admin_urlname:'add' as add_url %}
+      {% if add_url %}
+        <li>
+          <a href="{% add_preserved_filters add_url %}" class="addlink">
+            {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
+          </a>
+        </li>
+      {% endif %}
+    {% endblock %}
+  </ul>
+{% endif %}
+{% endblock %}
+
+{% block search %}
+{% if cl.search_fields %}
+<div class="search">
+  <h2>{% trans 'Search' %}</h2>
+  <form id="search-form" method="get">
+    <div>
+      <label for="searchbar"><img src="{% static 'admin/img/search.svg' %}" alt="Search" /></label>
+      <input type="text" size="40" name="{{ search_var }}" value="{{ cl.query }}" id="searchbar" autofocus />
+      <input type="submit" value="{% trans 'Search' %}" />
+      {% if show_result_count %}
+        <span class="small quiet">{% blocktrans count counter=cl.result_count %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %} </span>
+      {% endif %}
+      {% for pair in cl.params.items %}
+        {% if pair.0 != search_var %}<input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}"/>{% endif %}
+      {% endfor %}
+    </div>
+  </form>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block filters %}
+{% if cl.has_filters %}
+<div class="filters">
+  <h2>{% trans 'Filter' %}</h2>
+  <form method="get">
+    {% for spec in cl.filter_specs %}
+      {% admin_list_filter cl spec %}
+    {% endfor %}
+    <input type="submit" value="{% trans 'Apply' %}" />
+  </form>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block result_list %}
+{% if action_form and actions_on_top and cl.show_admin_actions %}{% admin_actions %}{% endif %}
+{% result_list cl %}
+{% if action_form and actions_on_bottom and cl.show_admin_actions %}{% admin_actions %}{% endif %}
+{% endblock %}
+
+{% block pagination %}
+{% pagination cl %}
+{% endblock %}

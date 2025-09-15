@@ -1,0 +1,176 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Client Dashboard - {{ block.super }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <!-- Welcome Section -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Welcome back, {{ user.get_full_name|default:user.username }}!</h2>
+        <p class="text-gray-600">Here's what's happening with your projects today.</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Active Requests Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Active Requests</p>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ active_requests_count }}</h3>
+                </div>
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-tasks text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Requests Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Completed</p>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ completed_requests_count }}</h3>
+                </div>
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <i class="fas fa-check-circle text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Events Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Upcoming Events</p>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ upcoming_events|length }}</h3>
+                </div>
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <i class="far fa-calendar-alt text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Requests Section -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Active Requests</h3>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% if active_requests %}
+                {% for request in active_requests %}
+                <div class="p-6 hover:bg-gray-50">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-md font-medium text-gray-900 truncate">{{ request.title }}</h4>
+                            <p class="mt-1 text-sm text-gray-500">{{ request.get_status_display }}</p>
+                        </div>
+                        <div class="ml-4 flex-shrink-0">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {% if request.status == 'in_progress' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {{ request.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-600 line-clamp-2">{{ request.description|truncatewords:20 }}</p>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center">
+                        <div class="text-sm text-gray-500">
+                            <span>Posted on {{ request.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        <a href="{% url 'request_detail' request.slug %}" class="text-sm font-medium text-primary hover:text-primary-dark">
+                            View details <span aria-hidden="true">&rarr;</span>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="p-6 text-center text-gray-500">
+                    <p>No active requests found.</p>
+                    <a href="{% url 'services:create_request' %}" class="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        Create New Request
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Upcoming Events Section -->
+    {% if upcoming_events %}
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Upcoming Events</h3>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for event in upcoming_events %}
+            <div class="p-6 hover:bg-gray-50">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 bg-primary-100 p-3 rounded-lg text-primary-800">
+                        <div class="text-sm font-medium">{{ event.start|date:"M" }}</div>
+                        <div class="text-xl font-bold">{{ event.start|date:"d" }}</div>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <h4 class="text-md font-medium text-gray-900">{{ event.title }}</h4>
+                        <p class="mt-1 text-sm text-gray-600">
+                            <i class="far fa-clock text-gray-400 mr-1"></i>
+                            {{ event.start|date:"g:i A" }} - {{ event.end|date:"g:i A" }}
+                        </p>
+                        <p class="mt-1 text-sm text-gray-600">
+                            <i class="far fa-calendar-alt text-gray-400 mr-1"></i>
+                            {{ event.start|date:"l, F j, Y" }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Activity Section -->
+    {% if completed_requests %}
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Recently Completed</h3>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for request in completed_requests %}
+            <div class="p-6 hover:bg-gray-50">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-md font-medium text-gray-900">{{ request.title }}</h4>
+                        <p class="mt-1 text-sm text-gray-500">Completed on {{ request.updated_at|date:"M d, Y" }}</p>
+                    </div>
+                    <div class="ml-4 flex-shrink-0">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                            Completed
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-600 line-clamp-2">{{ request.description|truncatewords:20 }}</p>
+                </div>
+                {% if request.accepted_expert %}
+                <div class="mt-3 flex items-center">
+                    <div class="flex-shrink-0">
+                        <img class="h-8 w-8 rounded-full" src="{{ request.accepted_expert.user.profile.image.url|default:'/static/img/default-avatar.png' }}" alt="">
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900">{{ request.accepted_expert.user.get_full_name|default:request.accepted_expert.user.username }}</p>
+                        <p class="text-sm text-gray-500">Expert</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="px-6 py-4 bg-gray-50 text-right">
+            <a href="{% url 'completed_requests' %}" class="text-sm font-medium text-primary hover:text-primary-dark">
+                View all completed requests <span aria-hidden="true">&rarr;</span>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

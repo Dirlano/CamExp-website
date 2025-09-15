@@ -1,0 +1,555 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Rate Expert{% endblock %}
+{% block content %}
+<!-- Header Section -->
+<section class="bg-gradient-to-br from-warning to-yellow-500 text-gray-900 py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Rate & Review</h1>
+        <p class="text-xl text-yellow-800 max-w-2xl mx-auto">
+            Share your experience and help other users make informed decisions
+        </p>
+    </div>
+</section>
+
+<!-- Rating Form -->
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+        <!-- Expert Information -->
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                {% if expert.profile.profile_picture %}
+                    <img src="{{ expert.profile.profile_picture.url }}" alt="{{ expert.user.get_full_name }}" class="w-20 h-20 rounded-full object-cover">
+                {% else %}
+                    {{ expert.user.first_name|first }}{{ expert.user.last_name|first }}
+                {% endif %}
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ expert.user.get_full_name }}</h2>
+            <p class="text-gray-600">{{ expert.user_type|title }} • {{ expert.location|default:"Location not specified" }}</p>
+        </div>
+
+        <!-- Rating Form -->
+        <form method="post" id="rating-form" class="space-y-8">
+            {% csrf_token %}
+            <input type="hidden" name="expert_id" value="{{ expert.id }}">
+            
+            <!-- Overall Rating -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-4">Overall Rating <span class="text-error">*</span></label>
+                <div class="flex justify-center">
+                    <div class="flex space-x-2" id="star-rating">
+                        {% for i in "12345" %}
+                        <button type="button" class="star-btn text-4xl text-gray-300 hover:text-warning transition-colors duration-200" data-rating="{{ i }}">
+                            <i class="fa-solid fa-star"></i>
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="text-center mt-2">
+                    <span id="rating-text" class="text-lg font-medium text-gray-600">Select a rating</span>
+                </div>
+                <input type="hidden" name="rating" id="rating-input" required>
+            </div>
+
+            <!-- Category Ratings -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-4">Rate by Category</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Communication -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-2">Communication</label>
+                        <div class="flex space-x-1" id="communication-rating">
+                            {% for i in "12345" %}
+                            <button type="button" class="category-star text-2xl text-gray-300 hover:text-warning transition-colors duration-200" data-rating="{{ i }}" data-category="communication">
+                                <i class="fa-solid fa-star"></i>
+                            </button>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="communication_rating" id="communication-input">
+                    </div>
+
+                    <!-- Quality -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-2">Quality of Work</label>
+                        <div class="flex space-x-1" id="quality-rating">
+                            {% for i in "12345" %}
+                            <button type="button" class="category-star text-2xl text-gray-300 hover:text-warning transition-colors duration-200" data-rating="{{ i }}" data-category="quality">
+                                <i class="fa-solid fa-star"></i>
+                            </button>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="quality_rating" id="quality-input">
+                    </div>
+
+                    <!-- Timeliness -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-2">Timeliness</label>
+                        <div class="flex space-x-1" id="timeliness-rating">
+                            {% for i in "12345" %}
+                            <button type="button" class="category-star text-2xl text-gray-300 hover:text-warning transition-colors duration-200" data-rating="{{ i }}" data-category="timeliness">
+                                <i class="fa-solid fa-star"></i>
+                            </button>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="timeliness_rating" id="timeliness-input">
+                    </div>
+
+                    <!-- Value -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-2">Value for Money</label>
+                        <div class="flex space-x-1" id="value-rating">
+                            {% for i in "12345" %}
+                            <button type="button" class="category-star text-2xl text-gray-300 hover:text-warning transition-colors duration-200" data-rating="{{ i }}" data-category="value">
+                                <i class="fa-solid fa-star"></i>
+                            </button>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="value_rating" id="value-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Title -->
+            <div>
+                <label for="review_title" class="block text-sm font-medium text-gray-700 mb-2">
+                    Review Title <span class="text-error">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    id="review_title" 
+                    name="review_title" 
+                    required
+                    maxlength="100"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-warning focus:border-transparent transition-all duration-200"
+                    placeholder="Summarize your experience in a few words"
+                >
+                <div class="flex justify-between items-center mt-1">
+                    <span class="text-xs text-gray-500">Keep it concise and descriptive</span>
+                    <span id="title-counter" class="text-xs text-gray-500">0/100</span>
+                </div>
+            </div>
+
+            <!-- Detailed Review -->
+            <div>
+                <label for="review_content" class="block text-sm font-medium text-gray-700 mb-2">
+                    Detailed Review <span class="text-error">*</span>
+                </label>
+                <textarea 
+                    id="review_content" 
+                    name="review_content" 
+                    rows="6"
+                    required
+                    maxlength="1000"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-warning focus:border-transparent transition-all duration-200 resize-none"
+                    placeholder="Share your detailed experience with this expert. What went well? What could be improved? Any specific examples or highlights?"
+                ></textarea>
+                <div class="flex justify-between items-center mt-1">
+                    <span class="text-xs text-gray-500">Be specific and constructive in your feedback</span>
+                    <span id="content-counter" class="text-xs text-gray-500">0/1000</span>
+                </div>
+            </div>
+
+            <!-- Project Information -->
+            <div>
+                <label for="project_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Related Project (Optional)
+                </label>
+                <select 
+                    id="project_id" 
+                    name="project_id"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-warning focus:border-transparent transition-all duration-200"
+                >
+                    <option value="">Select a project (optional)</option>
+                    {% for project in user_projects %}
+                    <option value="{{ project.id }}">{{ project.request.title }} - {{ project.created_at|date:"M j, Y" }}</option>
+                    {% endfor %}
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Linking to a specific project helps provide context</p>
+            </div>
+
+            <!-- Anonymous Review -->
+            <div class="bg-gray-50 rounded-lg p-4">
+                <label class="flex items-center">
+                    <input type="checkbox" name="anonymous" id="anonymous" class="mr-3">
+                    <span class="text-sm text-gray-700">Submit this review anonymously</span>
+                </label>
+                <p class="text-xs text-gray-500 mt-1">Your name will not be displayed with the review</p>
+            </div>
+
+            <!-- Terms -->
+            <div class="bg-blue-50 rounded-lg p-4">
+                <label class="flex items-start">
+                    <input type="checkbox" name="terms_accepted" required class="mr-3 mt-1">
+                    <span class="text-sm text-gray-700">
+                        I confirm that this review is based on my genuine experience with this expert. 
+                        I understand that false or misleading reviews violate our terms of service.
+                    </span>
+                </label>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button type="submit" class="bg-warning hover:bg-yellow-500 text-gray-900 px-12 py-4 rounded-lg font-semibold text-xl transition-all duration-200 transform hover:-translate-y-1 shadow-lg hover:shadow-xl">
+                    <i class="fa-solid fa-star mr-3"></i>Submit Review
+                </button>
+                <p class="text-sm text-gray-500 mt-3">
+                    Your review will help other users make informed decisions
+                </p>
+            </div>
+        </form>
+    </div>
+
+    <!-- Review Guidelines -->
+    <div class="mt-8 bg-blue-50 rounded-xl p-6">
+        <h3 class="text-lg font-semibold text-blue-800 mb-4">
+            <i class="fa-solid fa-lightbulb mr-2"></i>Review Guidelines
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-700">
+            <div class="space-y-2">
+                <div class="flex items-start">
+                    <i class="fa-solid fa-check mr-2 mt-1 text-blue-600"></i>
+                    <span>Be honest and specific about your experience</span>
+                </div>
+                <div class="flex items-start">
+                    <i class="fa-solid fa-check mr-2 mt-1 text-blue-600"></i>
+                    <span>Focus on facts and constructive feedback</span>
+                </div>
+                <div class="flex items-start">
+                    <i class="fa-solid fa-check mr-2 mt-1 text-blue-600"></i>
+                    <span>Include both positive aspects and areas for improvement</span>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <div class="flex items-start">
+                    <i class="fa-solid fa-times mr-2 mt-1 text-red-500"></i>
+                    <span>Avoid personal attacks or offensive language</span>
+                </div>
+                <div class="flex items-start">
+                    <i class="fa-solid fa-times mr-2 mt-1 text-red-500"></i>
+                    <span>Don't include personal information or contact details</span>
+                </div>
+                <div class="flex items-start">
+                    <i class="fa-solid fa-times mr-2 mt-1 text-red-500"></i>
+                    <span>Refrain from making false or misleading statements</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let overallRating = 0;
+let categoryRatings = {
+    communication: 0,
+    quality: 0,
+    timeliness: 0,
+    value: 0
+};
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    initializeStarRatings();
+    initializeCounters();
+});
+
+// Initialize star rating functionality
+function initializeStarRatings() {
+    // Overall rating
+    const starButtons = document.querySelectorAll('#star-rating .star-btn');
+    starButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const rating = parseInt(this.dataset.rating);
+            setOverallRating(rating);
+        });
+    });
+
+    // Category ratings
+    const categoryStars = document.querySelectorAll('.category-star');
+    categoryStars.forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = parseInt(this.dataset.rating);
+            const category = this.dataset.category;
+            setCategoryRating(category, rating);
+        });
+    });
+}
+
+// Set overall rating
+function setOverallRating(rating) {
+    overallRating = rating;
+    document.getElementById('rating-input').value = rating;
+    
+    // Update star display
+    const stars = document.querySelectorAll('#star-rating .star-btn');
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.remove('text-gray-300');
+            star.classList.add('text-warning');
+        } else {
+            star.classList.remove('text-warning');
+            star.classList.add('text-gray-300');
+        }
+    });
+    
+    // Update rating text
+    const ratingTexts = [
+        'Select a rating',
+        'Poor - Not satisfied at all',
+        'Fair - Below expectations',
+        'Good - Met expectations',
+        'Very Good - Exceeded expectations',
+        'Excellent - Outstanding experience'
+    ];
+    document.getElementById('rating-text').textContent = ratingTexts[rating];
+}
+
+// Set category rating
+function setCategoryRating(category, rating) {
+    categoryRatings[category] = rating;
+    document.getElementById(`${category}_input`).value = rating;
+    
+    // Update star display for this category
+    const stars = document.querySelectorAll(`#${category}-rating .category-star`);
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.remove('text-gray-300');
+            star.classList.add('text-warning');
+        } else {
+            star.classList.remove('text-warning');
+            star.classList.add('text-gray-300');
+        }
+    });
+}
+
+// Initialize character counters
+function initializeCounters() {
+    const titleInput = document.getElementById('review_title');
+    const contentInput = document.getElementById('review_content');
+    const titleCounter = document.getElementById('title-counter');
+    const contentCounter = document.getElementById('content-counter');
+    
+    titleInput.addEventListener('input', function() {
+        const remaining = 100 - this.value.length;
+        titleCounter.textContent = `${this.value.length}/100`;
+        
+        if (remaining < 0) {
+            titleCounter.classList.add('text-error');
+        } else {
+            titleCounter.classList.remove('text-error');
+        }
+    });
+    
+    contentInput.addEventListener('input', function() {
+        const remaining = 1000 - this.value.length;
+        contentCounter.textContent = `${this.value.length}/1000`;
+        
+        if (remaining < 0) {
+            contentCounter.classList.add('text-error');
+        } else {
+            contentCounter.classList.remove('text-error');
+        }
+    });
+}
+
+// Form validation
+document.getElementById('rating-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Validate overall rating
+    if (overallRating === 0) {
+        showToast('Please select an overall rating', 'error');
+        return;
+    }
+    
+    // Validate required fields
+    const title = document.getElementById('review_title').value.trim();
+    const content = document.getElementById('review_content').value.trim();
+    
+    if (!title || !content) {
+        showToast('Please fill in all required fields', 'error');
+        return;
+    }
+    
+    // Validate title length
+    if (title.length > 100) {
+        showToast('Review title is too long', 'error');
+        return;
+    }
+    
+    // Validate content length
+    if (content.length > 1000) {
+        showToast('Review content is too long', 'error');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i>Submitting...';
+    submitBtn.disabled = true;
+    
+    // Submit form
+    this.submit();
+});
+
+// Show toast notification
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-medium z-50 transform translate-x-full transition-transform duration-300 ${
+        type === 'success' ? 'bg-success' : 
+        type === 'error' ? 'bg-error' : 
+        'bg-primary'
+    }`;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+        toast.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Animate out and remove
+    setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+
+// Auto-save draft (optional feature)
+function autoSaveDraft() {
+    const formData = {
+        rating: overallRating,
+        categoryRatings: categoryRatings,
+        title: document.getElementById('review_title').value,
+        content: document.getElementById('review_content').value,
+        project: document.getElementById('project_id').value,
+        anonymous: document.getElementById('anonymous').checked
+    };
+    
+    localStorage.setItem('review_draft', JSON.stringify(formData));
+}
+
+// Load draft (optional feature)
+function loadDraft() {
+    const draft = localStorage.getItem('review_draft');
+    if (draft) {
+        const formData = JSON.parse(draft);
+        
+        if (formData.rating > 0) {
+            setOverallRating(formData.rating);
+        }
+        
+        Object.keys(formData.categoryRatings).forEach(category => {
+            if (formData.categoryRatings[category] > 0) {
+                setCategoryRating(category, formData.categoryRatings[category]);
+            }
+        });
+        
+        document.getElementById('review_title').value = formData.title || '';
+        document.getElementById('review_content').value = formData.content || '';
+        document.getElementById('project_id').value = formData.project || '';
+        document.getElementById('anonymous').checked = formData.anonymous || false;
+        
+        // Update counters
+        document.getElementById('title-counter').textContent = `${formData.title.length}/100`;
+        document.getElementById('content-counter').textContent = `${formData.content.length}/1000`;
+    }
+}
+
+// Auto-save every 30 seconds
+setInterval(autoSaveDraft, 30000);
+
+// Load draft on page load
+window.addEventListener('load', loadDraft);
+</script>
+
+<style>
+/* Star rating styles */
+.star-btn, .category-star {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.star-btn:hover, .category-star:hover {
+    transform: scale(1.1);
+}
+
+/* Form validation styles */
+.input-error {
+    border-color: #EF4444;
+    ring-color: #EF4444;
+}
+
+/* Smooth animations */
+.transition-all {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Custom focus styles */
+.focus\:ring-warning:focus {
+    --tw-ring-color: #FBBF24;
+}
+
+.focus\:border-warning:focus {
+    border-color: #FBBF24;
+}
+
+/* Toast animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(100%);
+    }
+}
+
+/* Form hover effects */
+.form-input:hover {
+    border-color: #D1D5DB;
+}
+
+/* Button hover effects */
+.btn-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+/* Character counter styles */
+.counter-error {
+    color: #EF4444;
+}
+
+/* Review guidelines styles */
+.guideline-item {
+    transition: all 0.2s ease-in-out;
+}
+
+.guideline-item:hover {
+    transform: translateX(4px);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .star-btn {
+        font-size: 2rem;
+    }
+    
+    .category-star {
+        font-size: 1.5rem;
+    }
+}
+</style>
+{% endblock %}

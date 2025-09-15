@@ -1,0 +1,545 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Chat with {{ other_user.get_full_name }}{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex flex-col">
+    <!-- Chat Header -->
+    <div class="bg-white shadow-sm border-b border-gray-200 px-4 py-4">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <!-- User Info -->
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white text-xl font-bold">
+                    {% if other_user.profile.profile_picture %}
+                        <img src="{{ other_user.profile.profile_picture.url }}" alt="{{ other_user.get_full_name }}" class="w-12 h-12 rounded-full object-cover">
+                    {% else %}
+                        {{ other_user.first_name|first }}{{ other_user.last_name|first }}
+                    {% endif %}
+                </div>
+                <div>
+                    <h1 class="text-xl font-semibold text-gray-800">{{ other_user.get_full_name }}</h1>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-success rounded-full"></div>
+                        <span class="text-sm text-gray-500">Online</span>
+                        {% if other_user.profile.location %}
+                            <span class="text-sm text-gray-400">•</span>
+                            <span class="text-sm text-gray-500">{{ other_user.profile.location }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex items-center space-x-3">
+                <button class="p-2 text-gray-500 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Voice Call">
+                    <i class="fa-solid fa-phone text-lg"></i>
+                </button>
+                <button class="p-2 text-gray-500 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Video Call">
+                    <i class="fa-solid fa-video text-lg"></i>
+                </button>
+                <button class="p-2 text-gray-500 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors duration-200" title="More Options">
+                    <i class="fa-solid fa-ellipsis-v text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="flex-1 flex max-w-6xl mx-auto w-full">
+        <!-- Main Chat Area -->
+        <div class="flex-1 flex flex-col">
+            <!-- Messages Container -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4" id="messages-container">
+                {% for message in messages %}
+                <div class="flex {% if message.sender == user %}justify-end{% else %}justify-start{% endif %}">
+                    <div class="max-w-xs lg:max-w-md">
+                        <!-- Message Bubble -->
+                        <div class="{% if message.sender == user %}bg-primary text-white{% else %}bg-white text-gray-800{% endif %} rounded-2xl px-4 py-3 shadow-sm">
+                            <p class="text-sm leading-relaxed">{{ message.content }}</p>
+                        </div>
+                        
+                        <!-- Message Info -->
+                        <div class="flex items-center justify-between mt-2 px-2">
+                            <span class="text-xs text-gray-500">
+                                {{ message.timestamp|date:"g:i A" }}
+                            </span>
+                            {% if message.sender == user %}
+                            <div class="flex items-center space-x-1">
+                                {% if message.read %}
+                                    <i class="fa-solid fa-check-double text-xs text-primary"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-check text-xs text-gray-400"></i>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <!-- Empty State -->
+                <div class="text-center py-12">
+                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-comments text-3xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-600 mb-2">Start a conversation</h3>
+                    <p class="text-gray-500">Send a message to begin chatting with {{ other_user.first_name }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Message Input -->
+            <div class="bg-white border-t border-gray-200 p-4">
+                <form id="message-form" class="flex items-end space-x-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="receiver" value="{{ other_user.id }}">
+                    
+                    <!-- File Upload -->
+                    <div class="relative">
+                        <input type="file" id="file-upload" name="attachment" class="hidden" accept="image/*,.pdf,.doc,.docx">
+                        <label for="file-upload" class="p-3 text-gray-500 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors duration-200 cursor-pointer" title="Attach file">
+                            <i class="fa-solid fa-paperclip text-lg"></i>
+                        </label>
+                    </div>
+                    
+                    <!-- Message Input -->
+                    <div class="flex-1 relative">
+                        <textarea 
+                            id="message-input" 
+                            name="content" 
+                            rows="1"
+                            placeholder="Type your message..."
+                            class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 resize-none max-h-32"
+                            onkeydown="handleKeyDown(event)"
+                        ></textarea>
+                        
+                        <!-- Emoji Picker -->
+                        <button type="button" class="absolute right-3 bottom-3 text-gray-400 hover:text-primary transition-colors duration-200" title="Add emoji">
+                            <i class="fa-regular fa-smile text-lg"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Send Button -->
+                    <button type="submit" class="bg-primary hover:bg-primary-dark text-white p-3 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                        <i class="fa-solid fa-paper-plane text-lg"></i>
+                    </button>
+                </form>
+                
+                <!-- Typing Indicator -->
+                <div id="typing-indicator" class="hidden mt-3 px-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                        <span class="text-sm text-gray-500">{{ other_user.first_name }} is typing...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="hidden lg:block w-80 bg-white border-l border-gray-200">
+            <!-- User Profile -->
+            <div class="p-6 border-b border-gray-200">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                        {% if other_user.profile.profile_picture %}
+                            <img src="{{ other_user.profile.profile_picture.url }}" alt="{{ other_user.get_full_name }}" class="w-20 h-20 rounded-full object-cover">
+                        {% else %}
+                            {{ other_user.first_name|first }}{{ other_user.last_name|first }}
+                        {% endif %}
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ other_user.get_full_name }}</h3>
+                    <p class="text-sm text-gray-500 mb-3">{{ other_user.profile.user_type|title }}</p>
+                    
+                    {% if other_user.profile.location %}
+                    <div class="flex items-center justify-center text-sm text-gray-500 mb-3">
+                        <i class="fa-solid fa-map-marker-alt mr-2"></i>
+                        <span>{{ other_user.profile.location }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="flex justify-center space-x-3">
+                        <button class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                            <i class="fa-solid fa-user mr-2"></i>View Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Details -->
+            <div class="p-6 space-y-4">
+                {% if other_user.profile.bio %}
+                <div>
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">About</h4>
+                    <p class="text-sm text-gray-600">{{ other_user.profile.bio }}</p>
+                </div>
+                {% endif %}
+                
+                {% if other_user.profile.skills %}
+                <div>
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">Skills</h4>
+                    <div class="flex flex-wrap gap-2">
+                        {% for skill in other_user.profile.skills|split:"," %}
+                        <span class="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs">{{ skill|strip }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div>
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">Member Since</h4>
+                    <p class="text-sm text-gray-600">{{ other_user.date_joined|date:"F Y" }}</p>
+                </div>
+                
+                {% if other_user.profile.hourly_rate %}
+                <div>
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">Hourly Rate</h4>
+                    <p class="text-sm text-gray-600">{{ other_user.profile.hourly_rate }} FCFA</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="p-6 border-t border-gray-200">
+                <h4 class="text-sm font-medium text-gray-700 mb-3">Quick Actions</h4>
+                <div class="space-y-2">
+                    <button class="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary rounded-lg transition-colors duration-200">
+                        <i class="fa-solid fa-star mr-2"></i>Rate & Review
+                    </button>
+                    <button class="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary rounded-lg transition-colors duration-200">
+                        <i class="fa-solid fa-flag mr-2"></i>Report Issue
+                    </button>
+                    <button class="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary rounded-lg transition-colors duration-200">
+                        <i class="fa-solid fa-ban mr-2"></i>Block User
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- File Preview Modal -->
+<div id="file-preview-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg max-w-md w-full p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Preview File</h3>
+                <button onclick="closeFilePreview()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="file-preview-content" class="mb-4">
+                <!-- File preview will be displayed here -->
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button onclick="closeFilePreview()" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200">
+                    Cancel
+                </button>
+                <button onclick="sendFile()" class="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors duration-200">
+                    Send File
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentFile = null;
+let typingTimer = null;
+let isTyping = false;
+
+// Auto-resize textarea
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('message-input');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 128) + 'px';
+        });
+    }
+    
+    // Scroll to bottom of messages
+    scrollToBottom();
+    
+    // Focus on input
+    textarea.focus();
+});
+
+// Handle Enter key
+function handleKeyDown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        document.getElementById('message-form').dispatchEvent(new Event('submit'));
+    }
+}
+
+// Handle form submission
+document.getElementById('message-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const input = document.getElementById('message-input');
+    const content = input.value.trim();
+    
+    if (!content) return;
+    
+    // Send message
+    sendMessage(content);
+    
+    // Clear input and reset height
+    input.value = '';
+    input.style.height = 'auto';
+});
+
+// Send message function
+function sendMessage(content) {
+    const form = document.getElementById('message-form');
+    const formData = new FormData(form);
+    
+    fetch('{% url "send_message" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Add message to chat
+            addMessageToChat(content, true);
+        } else {
+            console.error('Error sending message:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+// Add message to chat
+function addMessageToChat(content, isOwn = false) {
+    const container = document.getElementById('messages-container');
+    const messageDiv = document.createElement('div');
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    
+    messageDiv.className = `flex ${isOwn ? 'justify-end' : 'justify-start'}`;
+    messageDiv.innerHTML = `
+        <div class="max-w-xs lg:max-w-md">
+            <div class="${isOwn ? 'bg-primary text-white' : 'bg-white text-gray-800'} rounded-2xl px-4 py-3 shadow-sm">
+                <p class="text-sm leading-relaxed">${content}</p>
+            </div>
+            <div class="flex items-center justify-between mt-2 px-2">
+                <span class="text-xs text-gray-500">${timeString}</span>
+                ${isOwn ? '<div class="flex items-center space-x-1"><i class="fa-solid fa-check text-xs text-gray-400"></i></div>' : ''}
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+// Scroll to bottom
+function scrollToBottom() {
+    const container = document.getElementById('messages-container');
+    container.scrollTop = container.scrollHeight;
+}
+
+// Typing indicator
+document.getElementById('message-input').addEventListener('input', function() {
+    if (!isTyping) {
+        isTyping = true;
+        // Send typing indicator to server
+        // This would be implemented with WebSocket in a real application
+    }
+    
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => {
+        isTyping = false;
+        // Stop typing indicator
+    }, 1000);
+});
+
+// File upload handling
+document.getElementById('file-upload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        currentFile = file;
+        showFilePreview(file);
+    }
+});
+
+function showFilePreview(file) {
+    const modal = document.getElementById('file-preview-modal');
+    const content = document.getElementById('file-preview-content');
+    
+    if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            content.innerHTML = `
+                <img src="${e.target.result}" alt="Preview" class="w-full h-48 object-cover rounded-lg">
+                <p class="text-sm text-gray-600 mt-2">${file.name}</p>
+            `;
+        };
+        reader.readAsDataURL(file);
+    } else {
+        content.innerHTML = `
+            <div class="text-center py-8">
+                <i class="fa-solid fa-file text-4xl text-gray-400 mb-2"></i>
+                <p class="text-sm text-gray-600">${file.name}</p>
+                <p class="text-xs text-gray-500 mt-1">${formatFileSize(file.size)}</p>
+            </div>
+        `;
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+function closeFilePreview() {
+    document.getElementById('file-preview-modal').classList.add('hidden');
+    document.getElementById('file-upload').value = '';
+    currentFile = null;
+}
+
+function sendFile() {
+    if (!currentFile) return;
+    
+    const formData = new FormData();
+    formData.append('attachment', currentFile);
+    formData.append('receiver', '{{ other_user.id }}');
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    fetch('{% url "send_message" %}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Add file message to chat
+            addFileMessageToChat(currentFile, true);
+            closeFilePreview();
+        }
+    })
+    .catch(error => {
+        console.error('Error sending file:', error);
+    });
+}
+
+function addFileMessageToChat(file, isOwn = false) {
+    const container = document.getElementById('messages-container');
+    const messageDiv = document.createElement('div');
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    
+    const fileIcon = getFileIcon(file.name);
+    const fileSize = formatFileSize(file.size);
+    
+    messageDiv.className = `flex ${isOwn ? 'justify-end' : 'justify-start'}`;
+    messageDiv.innerHTML = `
+        <div class="max-w-xs lg:max-w-md">
+            <div class="${isOwn ? 'bg-primary text-white' : 'bg-white text-gray-800'} rounded-2xl px-4 py-3 shadow-sm">
+                <div class="flex items-center space-x-3">
+                    <i class="${fileIcon} text-xl"></i>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium truncate">${file.name}</p>
+                        <p class="text-xs opacity-75">${fileSize}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between mt-2 px-2">
+                <span class="text-xs text-gray-500">${timeString}</span>
+                ${isOwn ? '<div class="flex items-center space-x-1"><i class="fa-solid fa-check text-xs text-gray-400"></i></div>' : ''}
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+function getFileIcon(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    const icons = {
+        'pdf': 'fa-solid fa-file-pdf',
+        'doc': 'fa-solid fa-file-word',
+        'docx': 'fa-solid fa-file-word',
+        'jpg': 'fa-solid fa-file-image',
+        'jpeg': 'fa-solid fa-file-image',
+        'png': 'fa-solid fa-file-image',
+        'zip': 'fa-solid fa-file-archive',
+        'rar': 'fa-solid fa-file-archive'
+    };
+    return icons[ext] || 'fa-solid fa-file';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// WebSocket connection for real-time messaging
+// This would be implemented in a real application
+function connectWebSocket() {
+    // WebSocket implementation would go here
+    console.log('WebSocket connection established');
+}
+
+// Connect to WebSocket when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    connectWebSocket();
+});
+</script>
+
+<style>
+/* Custom scrollbar for messages container */
+#messages-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+#messages-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+#messages-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+#messages-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Smooth animations */
+.message-enter {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: messageEnter 0.3s ease-out forwards;
+}
+
+@keyframes messageEnter {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Typing indicator animation */
+.animate-bounce {
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+</style>
+{% endblock %}

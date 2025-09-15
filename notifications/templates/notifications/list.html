@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Notifications</h1>
+<ul class="space-y-3">
+    {% for n in notifications %}
+    <li class="bg-white p-4 rounded shadow">
+        <p class="font-medium">{{ n.message }}</p>
+        <p class="text-gray-600 text-sm">{{ n.timestamp }}</p>
+    </li>
+    {% empty %}
+    <li class="text-gray-600">No notifications.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
+

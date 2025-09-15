@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Schedule{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Schedule</h1>
+<div id="calendar" class="bg-white p-4 rounded shadow"></div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      events: [  // Load from DB via AJAX if needed
+        { title: 'Event1', date: '2025-08-21' }
+      ]
+    });
+    calendar.render();
+  });
+</script>
+{% endblock %}

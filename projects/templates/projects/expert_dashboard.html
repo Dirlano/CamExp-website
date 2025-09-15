@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Expert Dashboard - Projects{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Expert Dashboard</h1>
+        <p class="mt-2 text-sm text-gray-600">Welcome back! Here's what's happening with your projects.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Active Projects -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
+                        <i class="fas fa-tasks text-white text-xl"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Active Projects</dt>
+                            <dd class="flex items-baseline">
+                                <div class="text-2xl font-semibold text-gray-900">{{ active_projects_count|default:0 }}</div>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Projects -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
+                        <i class="fas fa-check-circle text-white text-xl"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Completed</dt>
+                            <dd class="flex items-baseline">
+                                <div class="text-2xl font-semibold text-gray-900">{{ completed_projects_count|default:0 }}</div>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Tasks -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
+                        <i class="fas fa-clock text-white text-xl"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Pending Tasks</dt>
+                            <dd class="flex items-baseline">
+                                <div class="text-2xl font-semibold text-gray-900">{{ pending_tasks_count|default:0 }}</div>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Earnings -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
+                        <i class="fas fa-dollar-sign text-white text-xl"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Total Earnings</dt>
+                            <dd class="flex items-baseline">
+                                <div class="text-2xl font-semibold text-gray-900">${{ total_earnings|default:'0'|floatformat:2 }}</div>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Recent Projects -->
+        <div class="lg:col-span-2">
+            <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Recent Projects</h3>
+                </div>
+                <div class="bg-white overflow-hidden">
+                    <ul class="divide-y divide-gray-200">
+                        {% for project in recent_projects %}
+                        <li>
+                            <a href="{% url 'projects:project_detail' project.id %}" class="block hover:bg-gray-50">
+                                <div class="px-4 py-4 sm:px-6">
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-sm font-medium text-blue-600 truncate">{{ project.title }}</p>
+                                        <div class="ml-2 flex-shrink-0 flex">
+                                            <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                {% if project.status == 'completed' %}bg-green-100 text-green-800
+                                                {% elif project.status == 'in_progress' %}bg-blue-100 text-blue-800
+                                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                                {{ project.get_status_display }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 sm:flex sm:justify-between">
+                                        <div class="sm:flex">
+                                            <p class="flex items-center text-sm text-gray-500">
+                                                <i class="far fa-calendar-alt mr-1.5"></i>
+                                                Due {{ project.deadline|date:"M d, Y" }}
+                                            </p>
+                                        </div>
+                                        <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                                            <i class="fas fa-tag mr-1.5 text-gray-400"></i>
+                                            {{ project.category|default:"No Category" }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        {% empty %}
+                        <li class="px-4 py-5 sm:px-6">
+                            <p class="text-gray-500 text-center">No projects found.</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% if recent_projects %}
+                <div class="bg-gray-50 px-4 py-3 text-right sm:px-6">
+                    <a href="{% url 'projects:project_list' %}" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+                        View all projects<span class="sr-only">, projects</span>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Upcoming Deadlines -->
+        <div>
+            <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Upcoming Deadlines</h3>
+                </div>
+                <div class="bg-white overflow-hidden">
+                    <ul class="divide-y divide-gray-200">
+                        {% for task in upcoming_tasks %}
+                        <li>
+                            <div class="px-4 py-4 sm:px-6">
+                                <div class="flex items-center">
+                                    <div class="min-w-0 flex-1 flex items-center">
+                                        <div class="min-w-0 flex-1">
+                                            <div class="text-sm">
+                                                <a href="#" class="font-medium text-gray-900 truncate">{{ task.title }}</a>
+                                            </div>
+                                            <div class="mt-1 flex items-center text-sm text-gray-500">
+                                                <span class="truncate">{{ task.project.title }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ml-5 flex-shrink-0">
+                                        <span class="text-xs font-medium text-gray-500">{{ task.due_date|date:"M d" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="px-4 py-5 sm:px-6">
+                            <p class="text-gray-500 text-center">No upcoming deadlines.</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="mt-6 bg-white shadow overflow-hidden sm:rounded-lg">
+                <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Recent Activity</h3>
+                </div>
+                <div class="bg-white overflow-hidden">
+                    <ul class="divide-y divide-gray-200">
+                        {% for activity in recent_activities %}
+                        <li class="px-4 py-4">
+                            <div class="flex space-x-3">
+                                <div class="flex-shrink-0">
+                                    <img class="h-8 w-8 rounded-full" src="{{ activity.user.profile.avatar.url|default:'/static/img/default-avatar.png' }}" alt="">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-800">
+                                        <span class="font-medium text-gray-900">{{ activity.user.get_full_name }}</span>
+                                        {{ activity.get_action_display }}
+                                        <a href="#" class="font-medium text-blue-600 hover:text-blue-500">{{ activity.target }}</a>
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        {{ activity.timestamp|timesince }} ago
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="px-4 py-5 sm:px-6">
+                            <p class="text-gray-500 text-center">No recent activity.</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

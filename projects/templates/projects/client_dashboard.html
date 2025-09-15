@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Client Dashboard</h1>
+        
+        <!-- Welcome Section -->
+        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-user-circle text-blue-400 text-3xl"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-blue-700">
+                        Welcome back, <span class="font-medium">{{ request.user.get_full_name|default:request.user.username }}</span>!
+                        Here's an overview of your projects.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Active Projects -->
+            <div class="bg-white border rounded-lg p-6 shadow-sm">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-tasks text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900">Active Projects</h3>
+                        <p class="text-2xl font-bold">{{ active_projects_count|default:'0' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Completed Projects -->
+            <div class="bg-white border rounded-lg p-6 shadow-sm">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-check-circle text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900">Completed</h3>
+                        <p class="text-2xl font-bold">{{ completed_projects_count|default:'0' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Spent -->
+            <div class="bg-white border rounded-lg p-6 shadow-sm">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                        <i class="fas fa-coins text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900">Total Spent</h3>
+                        <p class="text-2xl font-bold">${{ total_spent|default:'0'|floatformat:2 }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects List -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                    Your Projects
+                </h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                    All your active and completed projects
+                </p>
+            </div>
+            
+            {% if projects %}
+                <ul class="divide-y divide-gray-200">
+                    {% for project in projects %}
+                    <li class="px-4 py-4 sm:px-6 hover:bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center">
+                                        <p class="text-sm font-medium text-indigo-600 truncate">
+                                            {{ project.request.title }}
+                                        </p>
+                                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if project.status == 'completed' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                            {{ project.status|title }}
+                                        </span>
+                                    </div>
+                                    <div class="mt-2 flex">
+                                        <div class="flex items-center text-sm text-gray-500">
+                                            <i class="fas fa-calendar-alt mr-1.5 h-4 w-4 text-gray-400"></i>
+                                            <span>Started on {{ project.created_at|date:"M d, Y" }}</span>
+                                        </div>
+                                        <div class="ml-4 flex items-center text-sm text-gray-500">
+                                            <i class="fas fa-dollar-sign mr-1.5 h-4 w-4 text-gray-400"></i>
+                                            <span>Budget: ${{ project.request.budget|floatformat:2 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <a href="{% url 'project_detail' project.id %}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="px-4 py-12 text-center">
+                    <i class="fas fa-inbox text-4xl text-gray-400 mb-2"></i>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No projects</h3>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Get started by creating a new project.
+                    </p>
+                    <div class="mt-6">
+                        <a href="{% url 'services:list' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <i class="fas fa-plus -ml-1 mr-2 h-5 w-5"></i>
+                            New Project
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

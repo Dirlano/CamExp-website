@@ -1,0 +1,5 @@
+Django==5.0
+channels==4.1.0
+requests==2.32.3
+# For production, add channels_redis==4.2.0
+# Download FullCalendar JS and place in static/js/fullcalendar.js

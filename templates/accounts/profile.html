@@ -1,0 +1,380 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile - {{ user.get_full_name }}{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Profile Header -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    {% if user.profile.profile_picture %}
+                        <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.get_full_name }}" class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg">
+                    {% else %}
+                        <div class="w-20 h-20 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg">
+                            {{ user.first_name|first }}{{ user.last_name|first }}
+                        </div>
+                    {% endif %}
+                    <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-success rounded-full border-2 border-white flex items-center justify-center">
+                        <i class="fa-solid fa-check text-white text-xs"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">{{ user.get_full_name }}</h1>
+                    <p class="text-gray-600">@{{ user.username }}</p>
+                    <p class="text-sm text-gray-500">{{ user.profile.location|default:"Location not specified" }}</p>
+                </div>
+            </div>
+            <div class="mt-4 md:mt-0">
+                <a href="{% url 'edit_profile' %}" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 inline-flex items-center">
+                    <i class="fa-solid fa-edit mr-2"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+        
+        <!-- Profile Completion Progress -->
+        <div class="mt-6">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-gray-700">Profile Completion</span>
+                <span class="text-sm text-gray-500">{{ profile_completion }}%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: {{ profile_completion }}%"></div>
+            </div>
+            <div class="mt-2 text-xs text-gray-500">
+                Complete your profile to increase visibility and trust
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Left Sidebar -->
+        <div class="lg:w-80">
+            <!-- Profile Info Card -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Profile Information</h3>
+                
+                <!-- User Type -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">User Type</label>
+                    <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                        {% if user.profile.user_type == 'expert' %}bg-success/20 text-success{% else %}bg-primary/20 text-primary{% endif %}">
+                        <i class="fa-solid {% if user.profile.user_type == 'expert' %}fa-tools{% else %}fa-user{% endif %} mr-2"></i>
+                        {{ user.profile.get_user_type_display|default:"Client" }}
+                    </div>
+                </div>
+                
+                <!-- Bio -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Bio</label>
+                    <p class="text-gray-800 text-sm leading-relaxed">
+                        {{ user.profile.bio|default:"No bio added yet. Click 'Edit Profile' to add your bio." }}
+                    </p>
+                </div>
+                
+                <!-- Location -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Location</label>
+                    <p class="text-gray-800 text-sm">
+                        <i class="fa-solid fa-map-marker-alt text-primary mr-2"></i>
+                        {{ user.profile.location|default:"Location not specified" }}
+                    </p>
+                </div>
+                
+                <!-- Member Since -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Member Since</label>
+                    <p class="text-gray-800 text-sm">
+                        <i class="fa-solid fa-calendar text-primary mr-2"></i>
+                        {{ user.date_joined|date:"F Y" }}
+                    </p>
+                </div>
+                
+                <!-- Contact Info -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Contact</label>
+                    <p class="text-gray-800 text-sm">
+                        <i class="fa-solid fa-envelope text-primary mr-2"></i>
+                        {{ user.email }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Stats Card -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Stats</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Services</span>
+                        <span class="font-semibold text-primary">{{ services_count|default:0 }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Requests</span>
+                        <span class="font-semibold text-warning">{{ requests_count|default:0 }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Rating</span>
+                        <div class="flex items-center">
+                            <div class="flex text-warning mr-2">
+                                {% for i in "12345" %}
+                                    <i class="fa-solid fa-star"></i>
+                                {% endfor %}
+                            </div>
+                            <span class="font-semibold text-gray-800">4.8</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Projects</span>
+                        <span class="font-semibold text-success">{{ projects_count|default:0 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Content Area -->
+        <div class="flex-1">
+            <!-- Tabs Navigation -->
+            <div class="bg-white rounded-2xl shadow-lg mb-6">
+                <div class="border-b border-gray-200">
+                    <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                        <button class="tab-button active py-4 px-1 border-b-2 border-primary text-primary font-medium text-sm" data-tab="services">
+                            <i class="fa-solid fa-screwdriver-wrench mr-2"></i>My Services
+                        </button>
+                        <button class="tab-button py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm" data-tab="requests">
+                            <i class="fa-solid fa-list mr-2"></i>My Requests
+                        </button>
+                        <button class="tab-button py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm" data-tab="ratings">
+                            <i class="fa-solid fa-star mr-2"></i>Ratings & Reviews
+                        </button>
+                        <button class="tab-button py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm" data-tab="projects">
+                            <i class="fa-solid fa-calendar-check mr-2"></i>Projects
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="p-6">
+                    <!-- Services Tab -->
+                    <div id="services" class="tab-content active">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-semibold text-gray-800">My Services</h3>
+                            <a href="{% url 'services:create_listing' %}" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg font-medium transition-all duration-200">
+                                <i class="fa-solid fa-plus mr-2"></i>Add Service
+                            </a>
+                        </div>
+                        
+                        {% if services %}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {% for service in services %}
+                                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                                    <h4 class="font-semibold text-gray-800 mb-2">{{ service.title }}</h4>
+                                    <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ service.description }}</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-lg font-bold text-primary">{{ service.price|floatformat:0 }} FCFA</span>
+                                        <div class="flex space-x-2">
+                                            <a href="{% url 'edit_service' service.id %}" class="text-primary hover:text-primary-dark text-sm">
+                                                <i class="fa-solid fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'service_detail' service.id %}" class="text-primary hover:text-primary-dark text-sm">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-8">
+                                <i class="fa-solid fa-screwdriver-wrench text-4xl text-gray-300 mb-4"></i>
+                                <p class="text-gray-500 mb-4">You haven't created any services yet.</p>
+                                <a href="{% url 'services:create_listing' %}" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium transition-all duration-200">
+                                    Create Your First Service
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Requests Tab -->
+                    <div id="requests" class="tab-content hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-semibold text-gray-800">My Requests</h3>
+                            <a href="{% url 'services:create_request' %}" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg font-medium transition-all duration-200">
+                                <i class="fa-solid fa-plus mr-2"></i>Post Request
+                            </a>
+                        </div>
+                        
+                        {% if requests %}
+                            <div class="space-y-4">
+                                {% for request in requests %}
+                                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <h4 class="font-semibold text-gray-800">{{ request.title }}</h4>
+                                            <p class="text-gray-600 text-sm mb-3">{{ request.description|truncatewords:30 }}</p>
+                                            <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                                <span><i class="fa-solid fa-money-bill mr-1"></i>{{ request.budget|floatformat:0 }} FCFA</span>
+                                                <span class="px-2 py-1 rounded-full text-xs font-medium
+                                                    {% if request.status == 'open' %}bg-green-100 text-green-800
+                                                    {% elif request.status == 'accepted' %}bg-blue-100 text-blue-800
+                                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                                    {{ request.get_status_display }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="flex space-x-2 ml-4">
+                                            <a href="{% url 'edit_request' request.id %}" class="text-primary hover:text-primary-dark">
+                                                <i class="fa-solid fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'request_detail' request.id %}" class="text-primary hover:text-primary-dark">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-8">
+                                <i class="fa-solid fa-list text-4xl text-gray-300 mb-4"></i>
+                                <p class="text-gray-500 mb-4">You haven't posted any requests yet.</p>
+                                <a href="{% url 'services:create_request' %}" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium transition-all duration-200">
+                                    Post Your First Request
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Ratings Tab -->
+                    <div id="ratings" class="tab-content hidden">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Ratings & Reviews</h3>
+                        
+                        {% if ratings %}
+                            <div class="space-y-4">
+                                {% for rating in ratings %}
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex items-start space-x-4">
+                                        <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
+                                            {{ rating.reviewer.user.first_name|first }}{{ rating.reviewer.user.last_name|first }}
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <h4 class="font-semibold text-gray-800">{{ rating.reviewer.user.get_full_name }}</h4>
+                                                <div class="flex text-warning">
+                                                    {% for i in "12345" %}
+                                                        <i class="fa-solid fa-star {% if forloop.counter <= rating.score %}text-warning{% else %}text-gray-300{% endif %}"></i>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            <p class="text-gray-600 text-sm">{{ rating.review }}</p>
+                                            <p class="text-xs text-gray-500 mt-2">{{ rating.created_at|date:"F j, Y" }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-8">
+                                <i class="fa-solid fa-star text-4xl text-gray-300 mb-4"></i>
+                                <p class="text-gray-500">No ratings or reviews yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Projects Tab -->
+                    <div id="projects" class="tab-content hidden">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">My Projects</h3>
+                        
+                        {% if projects %}
+                            <div class="space-y-4">
+                                {% for project in projects %}
+                                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <h4 class="font-semibold text-gray-800 mb-2">{{ project.request.title }}</h4>
+                                            <p class="text-gray-600 text-sm mb-3">{{ project.request.description|truncatewords:25 }}</p>
+                                            <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                                <span class="px-2 py-1 rounded-full text-xs font-medium
+                                                    {% if project.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                                    {% elif project.status == 'in_progress' %}bg-blue-100 text-blue-800
+                                                    {% else %}bg-green-100 text-green-800{% endif %}">
+                                                    {{ project.get_status_display }}
+                                                </span>
+                                                <span><i class="fa-solid fa-calendar mr-1"></i>{{ project.created_at|date:"M j, Y" }}</span>
+                                            </div>
+                                        </div>
+                                        <a href="{% url 'project_detail' project.id %}" class="text-primary hover:text-primary-dark ml-4">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-8">
+                                <i class="fa-solid fa-calendar-check text-4xl text-gray-300 mb-4"></i>
+                                <p class="text-gray-500">No projects yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Tab functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Remove active class from all buttons and contents
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active', 'border-primary', 'text-primary');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+                content.classList.remove('active');
+            });
+            
+            // Add active class to clicked button and corresponding content
+            this.classList.add('active', 'border-primary', 'text-primary');
+            this.classList.remove('border-transparent', 'text-gray-500');
+            
+            document.getElementById(targetTab).classList.remove('hidden');
+            document.getElementById(targetTab).classList.add('active');
+        });
+    });
+});
+</script>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.tab-button.active {
+    border-bottom-color: #3B82F6;
+    color: #3B82F6;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ profile_user.get_full_name }} - Profile{% endblock %}
+{% block content %}
+<!-- Header Section -->
+<section class="bg-gradient-to-br from-primary to-blue-600 text-white py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">{{ profile_user.get_full_name }}</h1>
+        <p class="text-xl text-blue-100 max-w-2xl mx-auto">
+            {{ profile.user_type|title }} • {{ profile.location|default:"Location not specified" }}
+        </p>
+    </div>
+</section>
+
+<!-- Profile Content -->
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Profile Section -->
+        <div class="lg:col-span-2">
+            <!-- Profile Card -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <!-- Profile Header -->
+                <div class="flex items-start space-x-6 mb-8">
+                    <div class="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-white text-3xl font-bold">
+                        {% if profile.profile_picture %}
+                            <img src="{{ profile.profile_picture.url }}" alt="{{ profile_user.get_full_name }}" class="w-24 h-24 rounded-full object-cover">
+                        {% else %}
+                            {{ profile_user.first_name|first }}{{ profile_user.last_name|first }}
+                        {% endif %}
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ profile_user.get_full_name }}</h2>
+                        <p class="text-lg text-gray-600 mb-2">{{ profile.user_type|title }}</p>
+                        {% if profile.location %}
+                            <p class="text-gray-500 mb-3">
+                                <i class="fa-solid fa-map-marker-alt mr-2"></i>{{ profile.location }}
+                            </p>
+                        {% endif %}
+                        {% if profile.experience_years %}
+                            <p class="text-gray-500 mb-3">
+                                <i class="fa-solid fa-briefcase mr-2"></i>{{ profile.experience_years }} years of experience
+                            </p>
+                        {% endif %}
+                        {% if profile.website %}
+                            <a href="{{ profile.website }}" target="_blank" class="text-primary hover:text-blue-600 transition-colors duration-200">
+                                <i class="fa-solid fa-globe mr-2"></i>Visit Website
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Bio Section -->
+                {% if profile.bio %}
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">About</h3>
+                        <p class="text-gray-600 leading-relaxed">{{ profile.bio }}</p>
+                    </div>
+                {% endif %}
+
+                <!-- Skills Section -->
+                {% if profile.skills %}
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">Skills & Expertise</h3>
+                        <div class="flex flex-wrap gap-2">
+                            {% for skill in profile.skills.splitlines %}
+                                {% if skill.strip %}
+                                    <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                                        {{ skill.strip }}
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Contact Information -->
+                {% if profile.phone %}
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">Contact Information</h3>
+                        <div class="space-y-2">
+                            {% if profile.phone %}
+                                <p class="text-gray-600">
+                                    <i class="fa-solid fa-phone mr-3 text-primary"></i>{{ profile.phone }}
+                                </p>
+                            {% endif %}
+                            <p class="text-gray-600">
+                                <i class="fa-solid fa-envelope mr-3 text-primary"></i>{{ profile_user.email }}
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Services Section (for experts) -->
+            {% if profile.user_type == 'expert' and services %}
+                <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Services Offered</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {% for service in services %}
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition-colors duration-200">
+                                <h4 class="font-semibold text-gray-800 mb-2">{{ service.title }}</h4>
+                                <p class="text-gray-600 text-sm mb-3">{{ service.description|truncatewords:20 }}</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-primary font-semibold">{{ service.price }} FCFA</span>
+                                    <a href="{% url 'service_detail' service.id %}" class="text-primary hover:text-blue-600 text-sm font-medium">
+                                        View Details →
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if services|length >= 6 %}
+                        <div class="text-center mt-6">
+                            <a href="{% url 'services:list' %}?expert={{ profile_user.username }}" class="text-primary hover:text-blue-600 font-medium">
+                                View All Services →
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <!-- Ratings & Reviews Section (for experts) -->
+            {% if profile.user_type == 'expert' and ratings %}
+                <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Ratings & Reviews</h3>
+                    
+                    <!-- Overall Rating -->
+                    <div class="text-center mb-8">
+                        <div class="text-4xl font-bold text-primary mb-2">
+                            {% if ratings %}
+                                {% with total_score=0 %}
+                                    {% for rating in ratings %}
+                                        {% with total_score=total_score|add:rating.score %}
+                                        {% endwith %}
+                                    {% endfor %}
+                                    {{ total_score|div:ratings|length|floatformat:1 }}
+                                {% endwith %}
+                            {% else %}
+                                0.0
+                            {% endif %}
+                        </div>
+                        <div class="flex justify-center space-x-1 mb-2">
+                            {% for i in "12345" %}
+                                <i class="fa-solid fa-star text-warning text-xl"></i>
+                            {% endfor %}
+                        </div>
+                        <p class="text-gray-600">{{ ratings|length }} review{{ ratings|length|pluralize }}</p>
+                    </div>
+
+                    <!-- Individual Reviews -->
+                    <div class="space-y-6">
+                        {% for rating in ratings %}
+                            <div class="border-b border-gray-200 pb-6 last:border-b-0">
+                                <div class="flex items-start space-x-4">
+                                    <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-semibold">
+                                        {% if rating.reviewer.user.first_name %}
+                                            {{ rating.reviewer.user.first_name|first }}{{ rating.reviewer.user.last_name|first }}
+                                        {% else %}
+                                            {{ rating.reviewer.user.username|first|upper }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <div class="flex space-x-1">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= rating.score %}
+                                                        <i class="fa-solid fa-star text-warning text-sm"></i>
+                                                    {% else %}
+                                                        <i class="fa-solid fa-star text-gray-300 text-sm"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                            <span class="text-sm text-gray-500">{{ rating.created_at|date:"M j, Y" }}</span>
+                                        </div>
+                                        {% if rating.review_title %}
+                                            <h4 class="font-semibold text-gray-800 mb-1">{{ rating.review_title }}</h4>
+                                        {% endif %}
+                                        <p class="text-gray-600 text-sm">{{ rating.review }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Rate This Expert Button -->
+                    {% if user.is_authenticated and user.profile != profile %}
+                        <div class="text-center mt-8">
+                            <a href="{% url 'rate_expert' profile.id %}" class="bg-warning hover:bg-yellow-500 text-gray-900 px-8 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:-translate-y-1 shadow-lg hover:shadow-xl">
+                                <i class="fa-solid fa-star mr-2"></i>Rate This Expert
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="lg:col-span-1">
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+                <div class="space-y-3">
+                    {% if user.is_authenticated and user.profile != profile %}
+                        {% if profile.user_type == 'expert' %}
+                            <a href="{% url 'create_request' %}" class="block w-full bg-primary hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-medium text-center transition-colors duration-200">
+                                <i class="fa-solid fa-plus mr-2"></i>Request Service
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'chat_room' profile.id %}" class="block w-full bg-success hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium text-center transition-colors duration-200">
+                            <i class="fa-solid fa-comments mr-2"></i>Send Message
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'services:list' %}?expert={{ profile_user.username }}" class="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg font-medium text-center transition-colors duration-200">
+                        <i class="fa-solid fa-search mr-2"></i>View All Services
+                    </a>
+                </div>
+            </div>
+
+            <!-- Profile Stats -->
+            <div class="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Profile Statistics</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Member since</span>
+                        <span class="font-medium text-gray-800">{{ profile_user.date_joined|date:"M Y" }}</span>
+                    </div>
+                    {% if profile.user_type == 'expert' %}
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Services</span>
+                            <span class="font-medium text-gray-800">{{ services|length }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Reviews</span>
+                            <span class="font-medium text-gray-800">{{ ratings|length }}</span>
+                        </div>
+                        {% if profile.experience_years %}
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Experience</span>
+                                <span class="font-medium text-gray-800">{{ profile.experience_years }} years</span>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Requests</span>
+                            <span class="font-medium text-gray-800">{{ recent_requests|length }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Contact Card -->
+            {% if user.is_authenticated and user.profile != profile %}
+                <div class="bg-white rounded-2xl shadow-xl p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Get in Touch</h3>
+                    <div class="space-y-3">
+                        <a href="{% url 'chat_room' profile.id %}" class="block w-full bg-primary hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-medium text-center transition-colors duration-200">
+                            <i class="fa-solid fa-comments mr-2"></i>Start Chat
+                        </a>
+                        {% if profile.phone %}
+                            <a href="tel:{{ profile.phone }}" class="block w-full bg-success hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium text-center transition-colors duration-200">
+                                <i class="fa-solid fa-phone mr-2"></i>Call Now
+                            </a>
+                        {% endif %}
+                        <a href="mailto:{{ profile_user.email }}" class="block w-full bg-warning hover:bg-yellow-500 text-gray-900 px-4 py-3 rounded-lg font-medium text-center transition-colors duration-200">
+                            <i class="fa-solid fa-envelope mr-2"></i>Send Email
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* Smooth animations */
+.transition-all {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Hover effects */
+.hover\:border-primary:hover {
+    border-color: #3B82F6;
+}
+
+/* Profile picture styles */
+.profile-picture {
+    transition: all 0.2s ease-in-out;
+}
+
+.profile-picture:hover {
+    transform: scale(1.05);
+}
+
+/* Button hover effects */
+.btn-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+/* Skill tag styles */
+.skill-tag {
+    transition: all 0.2s ease-in-out;
+}
+
+.skill-tag:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+</style>
+{% endblock %}

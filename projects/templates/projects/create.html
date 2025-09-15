@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Create Project{% endblock %}
+{% block content %}
+<!-- Header Section -->
+<section class="bg-gradient-to-br from-info to-blue-500 text-white py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Create New Project</h1>
+        <p class="text-xl text-blue-100 max-w-2xl mx-auto">
+            Transform your service request into a structured project
+        </p>
+    </div>
+</section>
+
+<!-- Project Creation Form -->
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+        <!-- Form Header -->
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-info/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-project-diagram text-2xl text-info"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Project Setup</h2>
+            <p class="text-gray-600">Configure your project details and timeline</p>
+        </div>
+
+        <!-- Service Request Summary -->
+        <div class="bg-blue-50 rounded-xl p-6 mb-8">
+            <h3 class="text-lg font-semibold text-blue-800 mb-4">
+                <i class="fa-solid fa-info-circle mr-2"></i>Service Request Summary
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="text-blue-600 font-medium">Title:</span>
+                    <p class="text-blue-800">{{ service_request.title }}</p>
+                </div>
+                <div>
+                    <span class="text-blue-600 font-medium">Budget:</span>
+                    <p class="text-blue-800">{{ service_request.budget }} FCFA</p>
+                </div>
+                <div>
+                    <span class="text-blue-600 font-medium">Category:</span>
+                    <p class="text-blue-800">{{ service_request.category|title }}</p>
+                </div>
+                <div>
+                    <span class="text-blue-600 font-medium">Timeline:</span>
+                    <p class="text-blue-800">{{ service_request.timeline|default:"Not specified" }}</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <span class="text-blue-600 font-medium">Description:</span>
+                <p class="text-blue-800 mt-1">{{ service_request.description }}</p>
+            </div>
+        </div>
+
+        <!-- Project Creation Form -->
+        <form method="post" id="project-form" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Project Title -->
+            <div>
+                <label for="project_title" class="block text-sm font-medium text-gray-700 mb-2">
+                    Project Title <span class="text-error">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    id="project_title" 
+                    name="project_title" 
+                    required
+                    maxlength="200"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200"
+                    placeholder="Enter a descriptive project title"
+                    value="{{ service_request.title }}"
+                >
+                <div class="flex justify-between items-center mt-1">
+                    <span class="text-xs text-gray-500">Make it clear and descriptive</span>
+                    <span id="title-counter" class="text-xs text-gray-500">0/200</span>
+                </div>
+            </div>
+
+            <!-- Project Description -->
+            <div>
+                <label for="project_description" class="block text-sm font-medium text-gray-700 mb-2">
+                    Project Description
+                </label>
+                <textarea 
+                    id="project_description" 
+                    name="project_description" 
+                    rows="4"
+                    maxlength="1000"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200 resize-none"
+                    placeholder="Provide additional project details, requirements, or specifications..."
+                >{{ service_request.description }}</textarea>
+                <div class="flex justify-between items-center mt-1">
+                    <span class="text-xs text-gray-500">Optional: Add more details to the original request</span>
+                    <span id="description-counter" class="text-xs text-gray-500">0/1000</span>
+                </div>
+            </div>
+
+            <!-- Project Timeline -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Project Timeline</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Start Date -->
+                    <div>
+                        <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">
+                            Start Date <span class="text-error">*</span>
+                        </label>
+                        <input 
+                            type="date" 
+                            id="start_date" 
+                            name="start_date" 
+                            required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200"
+                            min="{{ today|date:'Y-m-d' }}"
+                        >
+                        <p class="text-xs text-gray-500 mt-1">When should the project begin?</p>
+                    </div>
+
+                    <!-- End Date -->
+                    <div>
+                        <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">
+                            End Date
+                        </label>
+                        <input 
+                            type="date" 
+                            id="end_date" 
+                            name="end_date" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200"
+                            min="{{ today|date:'Y-m-d' }}"
+                        >
+                        <p class="text-xs text-gray-500 mt-1">Optional: Set a target completion date</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Phases -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Project Phases (Optional)</h3>
+                <p class="text-sm text-gray-600 mb-4">
+                    Break down your project into manageable phases for better tracking
+                </p>
+                
+                <div id="phases-container" class="space-y-4">
+                    <!-- Phase items will be added here -->
+                </div>
+                
+                <button type="button" onclick="addPhase()" class="mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition-colors duration-200">
+                    <i class="fa-solid fa-plus mr-2"></i>Add Phase
+                </button>
+            </div>
+
+            <!-- Project Settings -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Project Settings</h3>
+                <div class="space-y-4">
+                    <!-- Auto-notifications -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="auto_notifications" name="auto_notifications" checked class="mr-3">
+                        <label for="auto_notifications" class="text-sm text-gray-700">
+                            Enable automatic notifications for project updates
+                        </label>
+                    </div>
+                    
+                    <!-- Progress tracking -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="progress_tracking" name="progress_tracking" checked class="mr-3">
+                        <label for="progress_tracking" class="text-sm text-gray-700">
+                            Enable progress tracking and milestone updates
+                        </label>
+                    </div>
+                    
+                    <!-- File sharing -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="file_sharing" name="file_sharing" checked class="mr-3">
+                        <label for="file_sharing" class="text-sm text-gray-700">
+                            Enable file sharing and document uploads
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="bg-gray-50 rounded-lg p-4">
+                <label class="flex items-start">
+                    <input type="checkbox" name="terms_accepted" required class="mr-3 mt-1">
+                    <span class="text-sm text-gray-700">
+                        I agree to the <a href="#" class="text-info hover:text-blue-600">Project Terms</a> and
+                        <a href="#" class="text-info hover:text-blue-600">Service Agreement</a>.
+                        I confirm that I have the authority to create this project and that all information provided is accurate.
+                    </span>
+                </label>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <a href="{% url 'dashboard' %}" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 text-center">
+                    <i class="fa-solid fa-times mr-3"></i>Cancel
+                </a>
+                <button type="submit" class="flex-1 bg-info hover:bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 transform hover:-translate-y-1 shadow-lg hover:shadow-xl">
+                    <i class="fa-solid fa-rocket mr-3"></i>Create Project
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCounters();
+    initializeDateValidation();
+    addPhase(); // Add first phase by default
+});
+
+// Initialize character counters
+function initializeCounters() {
+    const titleInput = document.getElementById('project_title');
+    const descriptionInput = document.getElementById('project_description');
+    const titleCounter = document.getElementById('title-counter');
+    const descriptionCounter = document.getElementById('description-counter');
+    
+    titleInput.addEventListener('input', function() {
+        titleCounter.textContent = `${this.value.length}/200`;
+    });
+    
+    descriptionInput.addEventListener('input', function() {
+        descriptionCounter.textContent = `${this.value.length}/1000`;
+    });
+}
+
+// Initialize date validation
+function initializeDateValidation() {
+    const startDate = document.getElementById('start_date');
+    const endDate = document.getElementById('end_date');
+    
+    startDate.addEventListener('change', function() {
+        if (endDate.value && this.value > endDate.value) {
+            endDate.value = this.value;
+        }
+        endDate.min = this.value;
+    });
+    
+    endDate.addEventListener('change', function() {
+        if (startDate.value && this.value < startDate.value) {
+            startDate.value = this.value;
+        }
+    });
+}
+
+// Phase management
+let phaseCounter = 0;
+
+function addPhase() {
+    const container = document.getElementById('phases-container');
+    const phaseDiv = document.createElement('div');
+    phaseDiv.className = 'phase-item border border-gray-200 rounded-lg p-4';
+    phaseDiv.id = `phase-${phaseCounter}`;
+    
+    phaseDiv.innerHTML = `
+        <div class="flex items-center justify-between mb-3">
+            <h4 class="font-medium text-gray-800">Phase ${phaseCounter + 1}</h4>
+            <button type="button" onclick="removePhase(${phaseCounter})" class="text-red-500 hover:text-red-600 text-sm">
+                <i class="fa-solid fa-trash mr-1"></i>Remove
+            </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Phase Name</label>
+                <input type="text" name="phase_names[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-info" placeholder="e.g., Planning Phase">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Duration (days)</label>
+                <input type="number" name="phase_durations[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-info" placeholder="7" min="1">
+            </div>
+        </div>
+        <div class="mt-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea name="phase_descriptions[]" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-info resize-none" placeholder="Brief description of this phase..."></textarea>
+        </div>
+    `;
+    
+    container.appendChild(phaseDiv);
+    phaseCounter++;
+}
+
+function removePhase(phaseId) {
+    const phaseElement = document.getElementById(`phase-${phaseId}`);
+    if (phaseElement) {
+        phaseElement.remove();
+        // Renumber remaining phases
+        renumberPhases();
+    }
+}
+
+function renumberPhases() {
+    const phases = document.querySelectorAll('.phase-item');
+    phases.forEach((phase, index) => {
+        const title = phase.querySelector('h4');
+        title.textContent = `Phase ${index + 1}`;
+    });
+}
+
+// Form validation
+document.getElementById('project-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Validate required fields
+    const requiredFields = this.querySelectorAll('[required]');
+    let isValid = true;
+
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('border-error', 'ring-error');
+            isValid = false;
+        } else {
+            field.classList.remove('border-error', 'ring-error');
+        }
+    });
+
+    // Validate dates
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    
+    if (startDate && endDate && startDate > endDate) {
+        alert('Start date cannot be after end date');
+        isValid = false;
+    }
+
+    if (!isValid) {
+        showToast('Please fill in all required fields', 'error');
+        return;
+    }
+
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i>Creating...';
+    submitBtn.disabled = true;
+    
+    // Submit form
+    this.submit();
+});
+
+// Show toast notification
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-medium z-50 transform translate-x-full transition-transform duration-300 ${
+        type === 'success' ? 'bg-success' : 
+        type === 'error' ? 'bg-error' : 
+        'bg-info'
+    }`;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+        toast.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Animate out and remove
+    setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+</script>
+
+<style>
+/* Form validation styles */
+.border-error {
+    border-color: #EF4444;
+}
+
+.ring-error {
+    --tw-ring-color: #EF4444;
+}
+
+/* Smooth animations */
+.transition-all {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Custom focus styles */
+.focus\:ring-info:focus {
+    --tw-ring-color: #0EA5E9;
+}
+
+.focus\:border-info:focus {
+    border-color: #0EA5E9;
+}
+
+/* Toast animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(100%);
+    }
+}
+
+/* Button hover effects */
+.btn-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+/* Phase item styles */
+.phase-item {
+    transition: all 0.2s ease-in-out;
+}
+
+.phase-item:hover {
+    border-color: #0EA5E9;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

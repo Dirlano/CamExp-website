@@ -1,0 +1,273 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .error-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        padding: 40px;
+        width: 100%;
+        max-width: 500px;
+        text-align: center;
+    }
+    
+    .error-header {
+        margin-bottom: 30px;
+    }
+    
+    .error-header h1 {
+        color: #333;
+        font-size: 28px;
+        font-weight: 600;
+        margin: 0 0 10px 0;
+    }
+    
+    .error-header p {
+        color: #666;
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .error-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 20px;
+        background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 40px;
+        font-weight: bold;
+    }
+    
+    .message-box {
+        background: #fff3cd;
+        color: #856404;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        border: 1px solid #ffeaa7;
+        font-size: 14px;
+        line-height: 1.6;
+        text-align: left;
+    }
+    
+    .message-box h3 {
+        margin: 0 0 15px 0;
+        color: #856404;
+        font-size: 18px;
+    }
+    
+    .message-box p {
+        margin: 0 0 10px 0;
+    }
+    
+    .message-box ul {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+    
+    .message-box li {
+        margin-bottom: 5px;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .action-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s;
+        min-width: 120px;
+    }
+    
+    .action-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        text-decoration: none;
+        color: white;
+    }
+    
+    .action-button.secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    }
+    
+    .action-button.secondary:hover {
+        background: linear-gradient(135deg, #5a6268 0%, #343a40 100%);
+    }
+    
+    .form-footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        text-align: center;
+        color: #666;
+        font-size: 12px;
+    }
+    
+    .info-box {
+        background: #e7f3ff;
+        color: #0c5460;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #bee5eb;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+    
+    .error-code {
+        font-size: 72px;
+        font-weight: bold;
+        color: #fd7e14;
+        margin: 0;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .retry-button {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+        min-width: 120px;
+        margin: 10px;
+    }
+    
+    .retry-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block bodyclass %}error-500{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-header">
+        <div class="error-icon">🚨</div>
+        <h1>Server Error</h1>
+        <p>Something went wrong on our end. We're working to fix it.</p>
+    </div>
+    
+    <div class="error-code">500</div>
+    
+    <div class="message-box">
+        <h3>What happened?</h3>
+        <p>We encountered an unexpected error while processing your request. This could be due to:</p>
+        <ul>
+            <li>A temporary server issue</li>
+            <li>Database connection problems</li>
+            <li>Configuration errors</li>
+            <li>Unexpected system behavior</li>
+        </ul>
+    </div>
+    
+    <div class="info-box">
+        <strong>Don't worry:</strong> This is likely a temporary issue. Our technical team has been notified 
+        and is working to resolve it as quickly as possible.
+    </div>
+    
+    <div class="action-buttons">
+        <button onclick="location.reload()" class="retry-button">
+            Try Again
+        </button>
+        <a href="{% url 'admin:index' %}" class="action-button">
+            Dashboard
+        </a>
+        <a href="{% url 'admin:login' %}" class="action-button secondary">
+            Login
+        </a>
+    </div>
+    
+    <div class="form-footer">
+        <p>CamExp Administration Portal</p>
+        <p>Error 500 - Internal Server Error</p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add some subtle effects
+    const errorIcon = document.querySelector('.error-icon');
+    const container = document.querySelector('.error-container');
+    const errorCode = document.querySelector('.error-code');
+    
+    // Add a subtle entrance animation
+    container.style.opacity = '0';
+    container.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+        container.style.transition = 'all 0.6s ease-out';
+        container.style.opacity = '1';
+        container.style.transform = 'translateY(0)';
+    }, 100);
+    
+    // Add a subtle pulse to the error code
+    setInterval(() => {
+        errorCode.style.transform = 'scale(1.05)';
+        setTimeout(() => {
+            errorCode.style.transform = 'scale(1)';
+        }, 200);
+    }, 4000);
+    
+    // Add a subtle bounce to the error icon
+    errorIcon.style.animation = 'bounce 2s ease-in-out infinite';
+    
+    // Add CSS animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Auto-retry after 30 seconds
+    setTimeout(() => {
+        if (confirm('Would you like to try again?')) {
+            location.reload();
+        }
+    }, 30000);
+});
+</script>
+{% endblock %}

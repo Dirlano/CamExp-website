@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Notification Settings{% endblock %}
+{% block content %}
+<!-- Header Section -->
+<section class="bg-gradient-to-br from-primary to-blue-600 text-white py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Notification Settings</h1>
+        <p class="text-xl text-blue-100 max-w-2xl mx-auto">
+            Customize how and when you receive notifications
+        </p>
+    </div>
+</section>
+
+<!-- Settings Content -->
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+        <!-- Form Header -->
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-bell text-2xl text-primary"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Manage Your Notifications</h2>
+            <p class="text-gray-600">Choose your preferred notification methods and frequency</p>
+        </div>
+
+        <!-- Notification Settings Form -->
+        <form method="post" id="notification-form" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Notification Methods -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Notification Methods</h3>
+                <div class="space-y-4">
+                    <!-- Email Notifications -->
+                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-primary transition-colors duration-200">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fa-solid fa-envelope text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800">Email Notifications</h4>
+                                <p class="text-sm text-gray-500">Receive notifications via email</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="email_notifications" id="email_notifications" 
+                                   {% if profile.email_notifications %}checked{% endif %} class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+
+                    <!-- Push Notifications -->
+                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-primary transition-colors duration-200">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fa-solid fa-mobile-alt text-green-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800">Push Notifications</h4>
+                                <p class="text-sm text-gray-500">Receive notifications on your device</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="push_notifications" id="push_notifications" 
+                                   {% if profile.push_notifications %}checked{% endif %} class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+
+                    <!-- SMS Notifications -->
+                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-primary transition-colors duration-200">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                                <i class="fa-solid fa-sms text-yellow-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800">SMS Notifications</h4>
+                                <p class="text-sm text-gray-500">Receive notifications via text message</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="sms_notifications" id="sms_notifications" 
+                                   {% if profile.sms_notifications %}checked{% endif %} class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Types -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Notification Types</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Project Updates -->
+                    <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                        <input type="checkbox" id="project_updates" name="notification_types" value="project_updates" checked class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2">
+                        <label for="project_updates" class="text-sm font-medium text-gray-700">Project Updates</label>
+                    </div>
+
+                    <!-- New Messages -->
+                    <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                        <input type="checkbox" id="new_messages" name="notification_types" value="new_messages" checked class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2">
+                        <label for="new_messages" class="text-sm font-medium text-gray-700">New Messages</label>
+                    </div>
+
+                    <!-- Payment Updates -->
+                    <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                        <input type="checkbox" id="payment_updates" name="notification_types" value="payment_updates" checked class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2">
+                        <label for="payment_updates" class="text-sm font-medium text-gray-700">Payment Updates</label>
+                    </div>
+
+                    <!-- Service Requests -->
+                    <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                        <input type="checkbox" id="service_requests" name="notification_types" value="service_requests" checked class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2">
+                        <label for="service_requests" class="text-sm font-medium text-gray-700">Service Requests</label>
+                    </div>
+
+                    <!-- Ratings & Reviews -->
+                    <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                        <input type="checkbox" id="ratings_reviews" name="notification_types" value="ratings_reviews" checked class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2">
+                        <label for="ratings_reviews" class="text-sm font-medium text-gray-700">Ratings & Reviews</label>
+                    </div>
+
+                    <!-- System Updates -->
+                    <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                        <input type="checkbox" id="system_updates" name="notification_types" value="system_updates" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2">
+                        <label for="system_updates" class="text-sm font-medium text-gray-700">System Updates</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Frequency -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Notification Frequency</h3>
+                <div class="space-y-3">
+                    <label class="flex items-center">
+                        <input type="radio" name="notification_frequency" value="immediate" checked class="mr-3 text-primary focus:ring-primary">
+                        <span class="text-gray-700">Immediate - Receive notifications as they happen</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="notification_frequency" value="hourly" class="mr-3 text-primary focus:ring-primary">
+                        <span class="text-gray-700">Hourly - Receive a summary every hour</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="notification_frequency" value="daily" class="mr-3 text-primary focus:ring-primary">
+                        <span class="text-gray-700">Daily - Receive a summary once per day</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="notification_frequency" value="weekly" class="mr-3 text-primary focus:ring-primary">
+                        <span class="text-gray-700">Weekly - Receive a summary once per week</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Quiet Hours -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Quiet Hours</h3>
+                <p class="text-sm text-gray-600 mb-4">
+                    Set times when you don't want to receive notifications (except urgent ones)
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="quiet_start" class="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
+                        <input type="time" id="quiet_start" name="quiet_start" value="22:00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label for="quiet_end" class="block text-sm font-medium text-gray-700 mb-2">End Time</label>
+                        <input type="time" id="quiet_end" name="quiet_end" value="08:00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="enable_quiet_hours" id="enable_quiet_hours" class="mr-3 text-primary focus:ring-primary">
+                        <span class="text-sm text-gray-700">Enable quiet hours</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Urgent Notifications -->
+            <div class="bg-yellow-50 rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-yellow-800 mb-4">
+                    <i class="fa-solid fa-exclamation-triangle mr-2"></i>Urgent Notifications
+                </h3>
+                <p class="text-sm text-yellow-700 mb-4">
+                    These notifications will always be sent regardless of your settings:
+                </p>
+                <ul class="space-y-2 text-sm text-yellow-700">
+                    <li class="flex items-start">
+                        <i class="fa-solid fa-check mr-2 mt-1 text-yellow-600"></i>
+                        <span>Payment confirmations and failures</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa-solid fa-check mr-2 mt-1 text-yellow-600"></i>
+                        <span>Account security alerts</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa-solid fa-check mr-2 mt-1 text-yellow-600"></i>
+                        <span>Critical project deadlines</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa-solid fa-check mr-2 mt-1 text-yellow-600"></i>
+                        <span>System maintenance notifications</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button type="button" onclick="resetToDefaults()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200">
+                    <i class="fa-solid fa-undo mr-3"></i>Reset to Defaults
+                </button>
+                <button type="submit" class="flex-1 bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 transform hover:-translate-y-1 shadow-lg hover:shadow-xl">
+                    <i class="fa-solid fa-save mr-3"></i>Save Settings
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    initializeForm();
+});
+
+// Initialize form functionality
+function initializeForm() {
+    // Handle quiet hours toggle
+    const quietHoursCheckbox = document.getElementById('enable_quiet_hours');
+    const quietStart = document.getElementById('quiet_start');
+    const quietEnd = document.getElementById('quiet_end');
+    
+    function toggleQuietHours() {
+        const enabled = quietHoursCheckbox.checked;
+        quietStart.disabled = !enabled;
+        quietEnd.disabled = !enabled;
+    }
+    
+    quietHoursCheckbox.addEventListener('change', toggleQuietHours);
+    toggleQuietHours(); // Initial state
+    
+    // Validate quiet hours
+    quietStart.addEventListener('change', validateQuietHours);
+    quietEnd.addEventListener('change', validateQuietHours);
+}
+
+// Validate quiet hours
+function validateQuietHours() {
+    const start = document.getElementById('quiet_start').value;
+    const end = document.getElementById('quiet_end').value;
+    
+    if (start && end) {
+        const startTime = new Date(`2000-01-01T${start}`);
+        const endTime = new Date(`2000-01-01T${end}`);
+        
+        if (startTime >= endTime) {
+            alert('End time must be after start time');
+            document.getElementById('quiet_end').value = '';
+        }
+    }
+}
+
+// Reset to default settings
+function resetToDefaults() {
+    if (confirm('Are you sure you want to reset all notification settings to defaults?')) {
+        // Reset checkboxes
+        document.getElementById('email_notifications').checked = true;
+        document.getElementById('push_notifications').checked = true;
+        document.getElementById('sms_notifications').checked = false;
+        
+        // Reset notification types
+        document.querySelectorAll('input[name="notification_types"]').forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        
+        // Reset frequency
+        document.querySelector('input[value="immediate"]').checked = true;
+        
+        // Reset quiet hours
+        document.getElementById('quiet_start').value = '22:00';
+        document.getElementById('quiet_end').value = '08:00';
+        document.getElementById('enable_quiet_hours').checked = false;
+        
+        // Update form state
+        initializeForm();
+        
+        showToast('Settings reset to defaults', 'success');
+    }
+}
+
+// Form submission
+document.getElementById('notification-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i>Saving...';
+    submitBtn.disabled = true;
+    
+    // Submit form
+    this.submit();
+});
+
+// Show toast notification
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-medium z-50 transform translate-x-full transition-transform duration-300 ${
+        type === 'success' ? 'bg-success' : 
+        type === 'error' ? 'bg-error' : 
+        'bg-primary'
+    }`;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+        toast.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Animate out and remove
+    setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+</script>
+
+<style>
+/* Smooth animations */
+.transition-all {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Custom focus styles */
+.focus\:ring-primary:focus {
+    --tw-ring-color: #3B82F6;
+}
+
+.focus\:border-primary:focus {
+    border-color: #3B82F6;
+}
+
+/* Toggle switch styles */
+.peer:checked ~ .peer-checked\:bg-primary {
+    background-color: #3B82F6;
+}
+
+.peer:checked ~ .peer-checked\:after\:translate-x-full {
+    transform: translateX(100%);
+}
+
+/* Toast animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(100%);
+    }
+}
+
+/* Button hover effects */
+.btn-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+/* Form element hover effects */
+.hover\:border-primary:hover {
+    border-color: #3B82F6;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

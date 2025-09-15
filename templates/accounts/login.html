@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="flex justify-center mb-4">
+                <img src="{% static 'img/camex_logo.png' %}" alt="CamExp Logo" class="h-16 w-auto rounded-lg">
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800">Welcome Back</h1>
+            <p class="text-gray-600 mt-2">Sign in to your CamExp account</p>
+        </div>
+
+        <!-- Login Form -->
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Username/Email -->
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+                        Username or Email <span class="text-error">*</span>
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            required
+                            autofocus
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                            placeholder="Enter your username or email"
+                            value="{{ form.username.value|default:'' }}"
+                        >
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i class="fa-solid fa-user text-gray-400"></i>
+                        </div>
+                    </div>
+                    {% if form.username.errors %}
+                        <div class="mt-1 text-error text-sm">
+                            {% for error in form.username.errors %}
+                                <i class="fa-solid fa-exclamation-circle mr-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                        Password <span class="text-error">*</span>
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                            placeholder="Enter your password"
+                        >
+                        <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center" onclick="togglePassword()">
+                            <i class="fa-solid fa-eye text-gray-400 hover:text-gray-600 transition-colors duration-200"></i>
+                        </button>
+                    </div>
+                    {% if form.password.errors %}
+                        <div class="mt-1 text-error text-sm">
+                            {% for error in form.password.errors %}
+                                <i class="fa-solid fa-exclamation-circle mr-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center">
+                        <input 
+                            type="checkbox" 
+                            name="remember_me" 
+                            class="w-4 h-4 border border-gray-300 rounded text-primary focus:ring-primary focus:ring-2"
+                        >
+                        <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                    </label>
+                    <a href="{% url 'password_reset' %}" class="text-sm text-primary hover:text-primary-dark font-medium transition-colors duration-200">
+                        Forgot password?
+                    </a>
+                </div>
+
+                <!-- Form Errors -->
+                {% if form.non_field_errors %}
+                    <div class="bg-error/10 border border-error/20 rounded-lg p-4">
+                        <div class="flex">
+                            <i class="fa-solid fa-exclamation-triangle text-error mt-0.5 mr-3"></i>
+                            <div class="text-sm text-error">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Submit Button -->
+                <button 
+                    type="submit" 
+                    class="w-full bg-primary hover:bg-primary-dark text-white py-3 px-4 rounded-lg font-semibold text-lg transition-all duration-200 transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
+                >
+                    <i class="fa-solid fa-right-to-bracket mr-2"></i>Sign In
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="px-2 bg-white text-gray-500">Or continue with</span>
+                </div>
+            </div>
+
+            <!-- Social Login Placeholders -->
+            <div class="grid grid-cols-2 gap-3">
+                <button type="button" class="w-full bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:bg-gray-50 hover:border-gray-400">
+                    <i class="fab fa-google mr-2 text-red-500"></i>Google
+                </button>
+                <button type="button" class="w-full bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:bg-gray-50 hover:border-gray-400">
+                    <i class="fab fa-facebook mr-2 text-blue-600"></i>Facebook
+                </button>
+            </div>
+
+            <!-- Register Link -->
+            <div class="mt-6 text-center">
+                <p class="text-gray-600">
+                    Don't have an account? 
+                    <a href="{% url 'register' %}" class="text-primary hover:text-primary-dark font-medium transition-colors duration-200">
+                        Sign up here
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="mt-8 text-center">
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">Why Choose CamExp?</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-600">
+                    <div class="flex flex-col items-center">
+                        <i class="fa-solid fa-shield-halved text-primary text-2xl mb-2"></i>
+                        <span>Secure Platform</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <i class="fa-solid fa-users text-primary text-2xl mb-2"></i>
+                        <span>Trusted Community</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <i class="fa-solid fa-headset text-primary text-2xl mb-2"></i>
+                        <span>24/7 Support</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Password visibility toggle
+function togglePassword() {
+    const input = document.getElementById('password');
+    const icon = input.nextElementSibling.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash text-gray-400 hover:text-gray-600 transition-colors duration-200';
+    } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye text-gray-400 hover:text-gray-600 transition-colors duration-200';
+    }
+}
+
+// Auto-focus on username field
+document.addEventListener('DOMContentLoaded', function() {
+    const usernameField = document.getElementById('username');
+    if (usernameField) {
+        usernameField.focus();
+    }
+    
+    // Form submission loading state
+    const form = document.querySelector('form');
+    const submitButton = form.querySelector('button[type="submit"]');
+    
+    form.addEventListener('submit', function() {
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Signing in...';
+    });
+});
+</script>
+{% endblock %}

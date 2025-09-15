@@ -1,0 +1,351 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+<style>
+    .dashboard-header {
+        text-align: center;
+        margin-bottom: 3px;
+        padding: 20px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 12px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .dashboard-logo {
+        margin-bottom: 15px;
+    }
+    
+    .dashboard-logo img {
+        height: 10px;
+        width: auto;
+        margin: 0 auto;
+        display: block;
+        border-radius: 30%;
+    }
+    
+    .dashboard-header h1 {
+        margin: 0;
+        color: #2c5aa0;
+        font-size: 32px;
+        font-weight: 700;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .dashboard-header p {
+        margin: 10px 0 0 0;
+        color: #6c757d;
+        font-size: 16px;
+        font-weight: 400;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card h3 {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .stat-number {
+        font-size: 32px;
+        font-weight: bold;
+        color: #2c5aa0;
+        margin: 0;
+    }
+    
+    .stat-description {
+        color: #666;
+        font-size: 12px;
+        margin: 5px 0 0 0;
+    }
+    
+    .quick-actions {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .quick-actions h2 {
+        margin: 0 0 20px 0;
+        color: #333;
+        font-size: 18px;
+    }
+    
+    .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .action-button {
+        display: inline-block;
+        padding: 12px 20px;
+        background: #2c5aa0;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        text-align: center;
+        transition: background 0.3s;
+    }
+    
+    .action-button:hover {
+        background: #1e3f6b;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .recent-activity {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .recent-activity h2 {
+        margin: 0 0 20px 0;
+        color: #333;
+        font-size: 18px;
+    }
+    
+    .activity-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-label {
+        font-weight: 600;
+        color: #333;
+        margin-right: 10px;
+    }
+    
+    .activity-value {
+        color: #2c5aa0;
+        font-weight: 600;
+    }
+    
+    .app-list {
+        margin-top: 30px;
+    }
+    
+    .app-list .module {
+        margin-bottom: 20px;
+    }
+    
+    .app-list .module caption {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px 8px 0 0;
+        border: 1px solid #dee2e6;
+        border-bottom: none;
+    }
+    
+    .app-list .module caption a {
+        color: #2c5aa0;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 16px;
+    }
+    
+    .app-list .module table {
+        border: 1px solid #dee2e6;
+        border-radius: 0 0 8px 8px;
+        overflow: hidden;
+    }
+    
+    .app-list .module table th {
+        background: #f8f9fa;
+        padding: 12px 15px;
+        border-bottom: 1px solid #dee2e6;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .app-list .module table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .app-list .module table tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .current-app .module caption {
+        background: #2c5aa0;
+        color: white;
+    }
+    
+    .current-app .module caption a {
+        color: white;
+    }
+    
+    .current-model {
+        background: #e3f2fd;
+    }
+    
+    .current-model td {
+        border-left: 4px solid #2c5aa0;
+    }
+    
+    .addlink {
+        float: right;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <!-- Dashboard Header with Logo -->
+    <div class="dashboard-header">
+        <div class="dashboard-logo">
+            <img src="{% static 'img/camex_logo.png' %}" alt="CamExp Logo">
+        </div>
+        <h1>{% trans 'CamExp Administration Dashboard' %}</h1>
+        <p>Manage your platform, users, services, and business operations</p>
+    </div>
+    
+    <!-- Statistics Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Users</h3>
+            <p class="stat-number">{{ total_users }}</p>
+            <p class="stat-description">Registered users in the system</p>
+        </div>
+        
+        <div class="stat-card">
+            <h3>Experts</h3>
+            <p class="stat-number">{{ total_experts }}</p>
+            <p class="stat-description">Service providers</p>
+        </div>
+        
+        <div class="stat-card">
+            <h3>Clients</h3>
+            <p class="stat-number">{{ total_clients }}</p>
+            <p class="stat-description">Service requesters</p>
+        </div>
+        
+        <div class="stat-card">
+            <h3>Total Services</h3>
+            <p class="stat-number">{{ total_services }}</p>
+            <p class="stat-description">Available service listings</p>
+        </div>
+        
+        <div class="stat-card">
+            <h3>Open Requests</h3>
+            <p class="stat-number">{{ open_requests }}</p>
+            <p class="stat-description">Pending service requests</p>
+        </div>
+        
+        <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <p class="stat-number">${{ total_payments|floatformat:2 }}</p>
+            <p class="stat-description">Completed payments</p>
+        </div>
+        
+        <div class="stat-card">
+            <h3>Active Projects</h3>
+            <p class="stat-number">{{ active_projects }}</p>
+            <p class="stat-description">Projects in progress</p>
+        </div>
+        
+        <div class="stat-card">
+            <h3>Unread Notifications</h3>
+            <p class="stat-number">{{ unread_notifications }}</p>
+            <p class="stat-description">Pending notifications</p>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h2>Quick Actions</h2>
+        <div class="action-buttons">
+            <a href="{% url 'admin:accounts_profile_add' %}" class="action-button">Add New Profile</a>
+            <a href="{% url 'admin:services_servicelisting_add' %}" class="action-button">Add Service Listing</a>
+            <a href="{% url 'admin:services_requestpost_add' %}" class="action-button">Add Request Post</a>
+            <a href="{% url 'admin:payments_payment_add' %}" class="action-button">Add Payment</a>
+            <a href="{% url 'admin:projects_project_add' %}" class="action-button">Add Project</a>
+            <a href="{% url 'admin:notifications_notification_add' %}" class="action-button">Send Notification</a>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="recent-activity">
+        <h2>Recent Activity (Last 7 Days)</h2>
+        <div class="activity-item">
+            <span class="activity-label">New Users:</span>
+            <span class="activity-value">{{ recent_users }}</span>
+        </div>
+        <div class="activity-item">
+            <span class="activity-label">New Services:</span>
+            <span class="activity-value">{{ recent_services }}</span>
+        </div>
+        <div class="activity-item">
+            <span class="activity-label">New Payments:</span>
+            <span class="activity-value">{{ recent_payments }}</span>
+        </div>
+    </div>
+    
+    <!-- Default Admin Content -->
+    {% if app_list %}
+        <div class="app-list">
+            {% for app in app_list %}
+                <div class="app-{{ app.app_label }} module{% if app.app_url in request.path %} current-app{% endif %}">
+                    <table>
+                        <caption>
+                            <a href="{{ app.app_url }}" class="section" title="{% blocktrans with name=app.name %}Models in the {{ name }} application{% endblocktrans %}">{{ app.name }}</a>
+                        </caption>
+                        {% for model in app.models %}
+                            <tr class="model-{{ model.object_name|lower }}{% if model.admin_url in request.path %} current-model{% endif %}">
+                                {% if model.admin_url %}
+                                    <th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
+                                {% else %}
+                                    <th scope="row">{{ model.name }}</th>
+                                {% endif %}
+                                {% if model.add_url %}
+                                    <td><a href="{{ model.add_url }}" class="addlink">{% trans 'Add' %}</a></td>
+                                {% else %}
+                                    <td>&nbsp;</td>
+                                {% endif %}
+                                {% if model.admin_url and show_changelinks %}
+                                    {% if model.view_only %}
+                                        <td><a href="{{ model.admin_url }}" class="viewlink">{% trans 'View' %}</a></td>
+                                    {% else %}
+                                        <td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>
+                                    {% endif %}
+                                {% else %}
+                                    <td>&nbsp;</td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>{% trans "You don't have permission to view or edit anything." %}</p>
+    {% endif %}
+</div>
+{% endblock %}

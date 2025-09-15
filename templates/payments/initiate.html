@@ -1,0 +1,566 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Initiate Payment{% endblock %}
+{% block content %}
+<!-- Header Section -->
+<section class="bg-gradient-to-br from-success to-green-600 text-white py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Complete Your Payment</h1>
+        <p class="text-xl text-green-100 max-w-2xl mx-auto">
+            Secure payment processing for your service request
+        </p>
+    </div>
+</section>
+
+<!-- Payment Form -->
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Payment Form -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <!-- Form Header -->
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-credit-card text-2xl text-success"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Payment Details</h2>
+                    <p class="text-gray-600">Choose your preferred payment method and complete the transaction</p>
+                </div>
+
+                <!-- Payment Form -->
+                <form method="post" id="payment-form" class="space-y-8">
+                    {% csrf_token %}
+                    <input type="hidden" name="request_id" value="{{ request_id }}">
+                    
+                    <!-- Payment Method Selection -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Select Payment Method</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Mobile Money Options -->
+                            <div class="space-y-3">
+                                <label class="relative">
+                                    <input type="radio" name="payment_method" value="mtn_momo" class="sr-only peer" checked>
+                                    <div class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-success peer-checked:bg-green-50 hover:border-gray-300 transition-all duration-200">
+                                        <div class="w-5 h-5 border-2 border-gray-300 rounded-full mr-3 peer-checked:border-success peer-checked:bg-success flex items-center justify-center">
+                                            <div class="w-2 h-2 bg-white rounded-full hidden peer-checked:block"></div>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                                                <i class="fa-solid fa-mobile-alt text-white text-lg"></i>
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-gray-800">MTN Mobile Money</div>
+                                                <div class="text-sm text-gray-500">Instant transfer</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="relative">
+                                    <input type="radio" name="payment_method" value="orange_money" class="sr-only peer">
+                                    <div class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-success peer-checked:bg-green-50 hover:border-gray-300 transition-all duration-200">
+                                        <div class="w-5 h-5 border-2 border-gray-300 rounded-full mr-3 peer-checked:border-success peer-checked:bg-success flex items-center justify-center">
+                                            <div class="w-2 h-2 bg-white rounded-full hidden peer-checked:block"></div>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
+                                                <i class="fa-solid fa-mobile-alt text-white text-lg"></i>
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-gray-800">Orange Money</div>
+                                                <div class="text-sm text-gray-500">Instant transfer</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <!-- Bank Transfer Options -->
+                            <div class="space-y-3">
+                                <label class="relative">
+                                    <input type="radio" name="payment_method" value="bank_transfer" class="sr-only peer">
+                                    <div class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-success peer-checked:bg-green-50 hover:border-gray-300 transition-all duration-200">
+                                        <div class="w-5 h-5 border-2 border-gray-300 rounded-full mr-3 peer-checked:border-success peer-checked:bg-success flex items-center justify-center">
+                                            <div class="w-2 h-2 bg-white rounded-full hidden peer-checked:block"></div>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                                                <i class="fa-solid fa-university text-white text-lg"></i>
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-gray-800">Bank Transfer</div>
+                                                <div class="text-sm text-gray-500">1-2 business days</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="relative">
+                                    <input type="radio" name="payment_method" value="card_payment" class="sr-only peer">
+                                    <div class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-success peer-checked:bg-green-50 hover:border-gray-300 transition-all duration-200">
+                                        <div class="w-5 h-5 border-2 border-gray-300 rounded-full mr-3 peer-checked:border-success peer-checked:bg-success flex items-center justify-center">
+                                            <div class="w-2 h-2 bg-white rounded-full hidden peer-checked:block"></div>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                                                <i class="fa-solid fa-credit-card text-white text-lg"></i>
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-gray-800">Credit/Debit Card</div>
+                                                <div class="text-sm text-gray-500">Instant processing</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Details -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Payment Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Amount -->
+                            <div class="md:col-span-2">
+                                <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Amount (FCFA) <span class="text-error">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input 
+                                        type="number" 
+                                        id="amount" 
+                                        name="amount" 
+                                        required
+                                        min="100"
+                                        step="100"
+                                        value="{{ amount|default:'' }}"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent transition-all duration-200 text-lg font-semibold"
+                                        placeholder="Enter amount"
+                                    >
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                        <span class="text-gray-500 font-medium">FCFA</span>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Minimum amount: 100 FCFA</p>
+                            </div>
+                            
+                            <!-- Phone Number (for mobile money) -->
+                            <div id="phone-field" class="md:col-span-2">
+                                <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Phone Number <span class="text-error">*</span>
+                                </label>
+                                <input 
+                                    type="tel" 
+                                    id="phone_number" 
+                                    name="phone_number" 
+                                    required
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent transition-all duration-200"
+                                    placeholder="e.g., 237612345678"
+                                >
+                                <p class="text-xs text-gray-500 mt-1">Enter the phone number associated with your mobile money account</p>
+                            </div>
+                            
+                            <!-- Bank Details (for bank transfer) -->
+                            <div id="bank-details" class="md:col-span-2 hidden">
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h4 class="font-medium text-gray-800 mb-3">Bank Transfer Details</h4>
+                                    <div class="space-y-3 text-sm">
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Bank Name:</span>
+                                            <span class="font-medium text-gray-800">Cameroon Bank</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Account Number:</span>
+                                            <span class="font-medium text-gray-800">1234567890</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Account Name:</span>
+                                            <span class="font-medium text-gray-800">CamExp Services</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Swift Code:</span>
+                                            <span class="font-medium text-gray-800">CMRBICM</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-3">Please include your request ID as reference when making the transfer</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Card Details (for card payment) -->
+                            <div id="card-details" class="md:col-span-2 hidden">
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="card_number" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Card Number <span class="text-error">*</span>
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            id="card_number" 
+                                            name="card_number"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent transition-all duration-200"
+                                            placeholder="1234 5678 9012 3456"
+                                            maxlength="19"
+                                        >
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="expiry_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                                Expiry Date <span class="text-error">*</span>
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                id="expiry_date" 
+                                                name="expiry_date"
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent transition-all duration-200"
+                                                placeholder="MM/YY"
+                                                maxlength="5"
+                                            >
+                                        </div>
+                                        <div>
+                                            <label for="cvv" class="block text-sm font-medium text-gray-700 mb-2">
+                                                CVV <span class="text-error">*</span>
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                id="cvv" 
+                                                name="cvv"
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent transition-all duration-200"
+                                                placeholder="123"
+                                                maxlength="4"
+                                            >
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="card_holder" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Cardholder Name <span class="text-error">*</span>
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            id="card_holder" 
+                                            name="card_holder"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent transition-all duration-200"
+                                            placeholder="JOHN DOE"
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Information -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Additional Information</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="reference" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Payment Reference
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="reference" 
+                                    name="reference"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent transition-all duration-200"
+                                    placeholder="Optional reference for your records"
+                                >
+                            </div>
+                            
+                            <div>
+                                <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Notes
+                                </label>
+                                <textarea 
+                                    id="notes" 
+                                    name="notes" 
+                                    rows="3"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent transition-all duration-200 resize-none"
+                                    placeholder="Any additional notes about this payment..."
+                                ></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Terms & Conditions -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <label class="flex items-start">
+                            <input type="checkbox" name="terms_accepted" required class="mr-3 mt-1">
+                            <span class="text-sm text-gray-700">
+                                I agree to the <a href="#" class="text-success hover:text-green-700">Payment Terms</a> and 
+                                <a href="#" class="text-success hover:text-green-700">Privacy Policy</a>. 
+                                I confirm that I have the right to make this payment.
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        <button type="submit" class="bg-success hover:bg-green-600 text-white px-12 py-4 rounded-lg font-semibold text-xl transition-all duration-200 transform hover:-translate-y-1 shadow-lg hover:shadow-xl">
+                            <i class="fa-solid fa-lock mr-3"></i>Complete Payment
+                        </button>
+                        <p class="text-sm text-gray-500 mt-3">
+                            Your payment is secured with bank-level encryption
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="lg:col-span-1">
+            <!-- Payment Summary -->
+            <div class="bg-white rounded-2xl shadow-xl p-6 mb-6 sticky top-24">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Payment Summary</h3>
+                
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Service Request:</span>
+                        <span class="font-medium text-gray-800">{{ request_title|default:"Web Development" }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Expert:</span>
+                        <span class="font-medium text-gray-800">{{ expert_name|default:"John Doe" }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Amount:</span>
+                        <span class="font-bold text-success text-xl" id="summary-amount">{{ amount|default:"0" }} FCFA</span>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Service Fee:</span>
+                        <span class="font-medium text-gray-800" id="service-fee">0 FCFA</span>
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-3">
+                        <div class="flex justify-between">
+                            <span class="text-lg font-semibold text-gray-800">Total:</span>
+                            <span class="text-2xl font-bold text-success" id="total-amount">{{ amount|default:"0" }} FCFA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Security Info -->
+            <div class="bg-blue-50 rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-blue-800 mb-4">
+                    <i class="fa-solid fa-shield-halved mr-2"></i>Secure Payment
+                </h3>
+                <div class="space-y-3 text-sm text-blue-700">
+                    <div class="flex items-start">
+                        <i class="fa-solid fa-check mr-2 mt-1 text-blue-600"></i>
+                        <span>Bank-level encryption</span>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fa-solid fa-check mr-2 mt-1 text-blue-600"></i>
+                        <span>PCI DSS compliant</span>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fa-solid fa-check mr-2 mt-1 text-blue-600"></i>
+                        <span>Instant confirmation</span>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fa-solid fa-check mr-2 mt-1 text-blue-600"></i>
+                        <span>24/7 support</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Help Section -->
+            <div class="bg-gray-50 rounded-xl p-6 mt-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fa-solid fa-question-circle mr-2"></i>Need Help?
+                </h3>
+                <div class="space-y-3 text-sm text-gray-600">
+                    <p>Having trouble with your payment?</p>
+                    <div class="space-y-2">
+                        <a href="#" class="block text-success hover:text-green-700 font-medium">
+                            <i class="fa-solid fa-headset mr-2"></i>Contact Support
+                        </a>
+                        <a href="#" class="block text-success hover:text-green-700 font-medium">
+                            <i class="fa-solid fa-book mr-2"></i>Payment Guide
+                        </a>
+                        <a href="#" class="block text-success hover:text-green-700 font-medium">
+                            <i class="fa-solid fa-phone mr-2"></i>Call Us
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Payment method change handling
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+    const phoneField = document.getElementById('phone-field');
+    const bankDetails = document.getElementById('bank-details');
+    const cardDetails = document.getElementById('card-details');
+    
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+            updatePaymentFields(this.value);
+        });
+    });
+    
+    // Initialize with default method
+    updatePaymentFields('mtn_momo');
+    
+    // Amount input handling
+    const amountInput = document.getElementById('amount');
+    if (amountInput) {
+        amountInput.addEventListener('input', function() {
+            updatePaymentSummary();
+        });
+    }
+});
+
+function updatePaymentFields(method) {
+    const phoneField = document.getElementById('phone-field');
+    const bankDetails = document.getElementById('bank-details');
+    const cardDetails = document.getElementById('card-details');
+    
+    // Hide all fields first
+    phoneField.classList.add('hidden');
+    bankDetails.classList.add('hidden');
+    cardDetails.classList.add('hidden');
+    
+    // Show relevant fields based on method
+    switch(method) {
+        case 'mtn_momo':
+        case 'orange_money':
+            phoneField.classList.remove('hidden');
+            break;
+        case 'bank_transfer':
+            bankDetails.classList.remove('hidden');
+            break;
+        case 'card_payment':
+            cardDetails.classList.remove('hidden');
+            break;
+    }
+}
+
+function updatePaymentSummary() {
+    const amount = parseFloat(document.getElementById('amount').value) || 0;
+    const serviceFee = Math.round(amount * 0.05); // 5% service fee
+    const total = amount + serviceFee;
+    
+    document.getElementById('summary-amount').textContent = `${amount.toLocaleString()} FCFA`;
+    document.getElementById('service-fee').textContent = `${serviceFee.toLocaleString()} FCFA`;
+    document.getElementById('total-amount').textContent = `${total.toLocaleString()} FCFA`;
+}
+
+// Card number formatting
+document.getElementById('card_number').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+    e.target.value = formattedValue;
+});
+
+// Expiry date formatting
+document.getElementById('expiry_date').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 2) {
+        value = value.substring(0, 2) + '/' + value.substring(2, 4);
+    }
+    e.target.value = value;
+});
+
+// CVV formatting
+document.getElementById('cvv').addEventListener('input', function(e) {
+    e.target.value = e.target.value.replace(/\D/g, '');
+});
+
+// Form validation
+document.getElementById('payment-form').addEventListener('submit', function(e) {
+    const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+    let isValid = true;
+    
+    // Validate amount
+    const amount = document.getElementById('amount').value;
+    if (!amount || parseFloat(amount) < 100) {
+        alert('Please enter a valid amount (minimum 100 FCFA)');
+        isValid = false;
+    }
+    
+    // Validate phone number for mobile money
+    if (selectedMethod === 'mtn_momo' || selectedMethod === 'orange_money') {
+        const phone = document.getElementById('phone_number').value;
+        if (!phone || phone.length < 9) {
+            alert('Please enter a valid phone number');
+            isValid = false;
+        }
+    }
+    
+    // Validate card details for card payment
+    if (selectedMethod === 'card_payment') {
+        const cardNumber = document.getElementById('card_number').value.replace(/\s/g, '');
+        const expiry = document.getElementById('expiry_date').value;
+        const cvv = document.getElementById('cvv').value;
+        const cardholder = document.getElementById('card_holder').value;
+        
+        if (!cardNumber || cardNumber.length < 13) {
+            alert('Please enter a valid card number');
+            isValid = false;
+        }
+        
+        if (!expiry || !/^\d{2}\/\d{2}$/.test(expiry)) {
+            alert('Please enter a valid expiry date (MM/YY)');
+            isValid = false;
+        }
+        
+        if (!cvv || cvv.length < 3) {
+            alert('Please enter a valid CVV');
+            isValid = false;
+        }
+        
+        if (!cardholder.trim()) {
+            alert('Please enter the cardholder name');
+            isValid = false;
+        }
+    }
+    
+    if (!isValid) {
+        e.preventDefault();
+    } else {
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i>Processing...';
+        submitBtn.disabled = true;
+    }
+});
+
+// Initialize payment summary
+updatePaymentSummary();
+</script>
+
+<style>
+/* Custom radio button styles */
+input[type="radio"]:checked + div {
+    border-color: #10B981;
+    background-color: #F0FDF4;
+}
+
+/* Smooth transitions */
+.transition-all {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Sticky positioning for sidebar */
+.sticky {
+    position: sticky;
+    top: 6rem;
+}
+
+/* Custom focus styles */
+.focus\:ring-success:focus {
+    --tw-ring-color: #10B981;
+}
+
+.focus\:border-success:focus {
+    border-color: #10B981;
+}
+</style>
+{% endblock %}

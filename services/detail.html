@@ -1,0 +1,25 @@
+{{ ... }}
+                {% if related_services %}
+                <div class="mt-4 text-center">
+                    <a href="{% url 'services:list' %}?category={{ service.category }}" class="text-primary hover:text-primary-dark font-medium text-sm">
+                        View All {{ service.category }} Services
+                    </a>
+                </div>
+                {% endif %}
+{{ ... }}
+
+{{ ... }}
+                    <a href="{% url 'chat_room' service.expert.user.id %}" class="bg-warning hover:bg-yellow-500 text-gray-900 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        <i class="fa-solid fa-comments mr-2"></i>Contact Expert
+                    </a>
+                    <a href="{% url 'services:create_request' %}?service={{ service.id }}" class="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 backdrop-blur-sm border border-white/30">
+                        <i class="fa-solid fa-file-lines mr-2"></i>Request Service
+                    </a>
+{{ ... }}
+                        <i class="fa-solid fa-comments mr-2"></i>Start Chat
+                    </a>
+                    
+                    <a href="{% url 'services:create_request' %}?service={{ service.id }}" class="w-full bg-warning hover:bg-yellow-500 text-gray-900 py-3 px-4 rounded-lg font-medium text-center transition-all duration-200 block">
+                        <i class="fa-solid fa-file-lines mr-2"></i>Request Service
+                    </a>
+{{ ... }}

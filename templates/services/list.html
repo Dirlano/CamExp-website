@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+{% block title %}Browse Services{% endblock %}
+{% block content %}
+<!-- Hero Section with Search -->
+<section class="bg-gradient-to-br from-primary to-primary-dark text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6">Find Expert Services</h1>
+        <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            Discover skilled professionals across Cameroon. From tech to trades, find the perfect expert for your needs.
+        </p>
+        
+        <!-- Search Bar -->
+        <div class="max-w-2xl mx-auto">
+            <form method="get" class="flex flex-col sm:flex-row gap-3">
+                <div class="flex-1">
+                    <input 
+                        type="text" 
+                        name="q" 
+                        placeholder="What service are you looking for?" 
+                        value="{{ request.GET.q }}"
+                        class="w-full px-6 py-4 text-gray-800 rounded-lg text-lg focus:outline-none focus:ring-4 focus:ring-white/20"
+                    >
+                </div>
+                <button type="submit" class="bg-warning hover:bg-yellow-500 text-gray-900 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    <i class="fa-solid fa-search mr-2"></i>Search
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Filter Sidebar (Desktop) -->
+        <div class="lg:w-64 lg:block hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Filters</h3>
+                
+                <!-- Category Filter -->
+                <div class="mb-6">
+                    <h4 class="font-medium text-gray-700 mb-3">Category</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="category" value="technology" class="rounded border-gray-300 text-primary focus:ring-primary">
+                            <span class="ml-2 text-gray-600">Technology</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="category" value="design" class="rounded border-gray-300 text-primary focus:ring-primary">
+                            <span class="ml-2 text-gray-600">Design & Creative</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="category" value="business" class="rounded border-gray-300 text-primary focus:ring-primary">
+                            <span class="ml-2 text-gray-600">Business & Consulting</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="category" value="health" class="rounded border-gray-300 text-primary focus:ring-primary">
+                            <span class="ml-2 text-gray-600">Health & Wellness</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="category" value="education" class="rounded border-gray-300 text-primary focus:ring-primary">
+                            <span class="ml-2 text-gray-600">Education & Training</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Price Range Filter -->
+                <div class="mb-6">
+                    <h4 class="font-medium text-gray-700 mb-3">Price Range</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="radio" name="price" value="0-10000" class="border-gray-300 text-primary focus:ring-primary">
+                            <span class="ml-2 text-gray-600">Under 10,000 FCFA</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="price" value="10000-50000" class="border-gray-300 text-primary focus:ring-primary">
+                            <span class="ml-2 text-gray-600">10,000 - 50,000 FCFA</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="price" value="50000+" class="border-gray-300 text-primary focus:ring-primary">
+                            <span class="ml-2 text-gray-600">50,000+ FCFA</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Location Filter -->
+                <div class="mb-6">
+                    <h4 class="font-medium text-gray-700 mb-3">Location</h4>
+                    <select class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="">All Locations</option>
+                        <option value="douala">Douala</option>
+                        <option value="yaounde">Yaoundé</option>
+                        <option value="bamenda">Bamenda</option>
+                        <option value="buea">Buea</option>
+                        <option value="garoua">Garoua</option>
+                    </select>
+                </div>
+                
+                <!-- Clear Filters -->
+                <button class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg transition-colors duration-200">
+                    Clear Filters
+                </button>
+            </div>
+        </div>
+        
+        <!-- Services Grid -->
+        <div class="flex-1">
+            <!-- Mobile Filter Toggle -->
+            <div class="lg:hidden mb-6">
+                <button class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50 transition-colors duration-200">
+                    <span class="font-medium text-gray-700">Show Filters</span>
+                    <i class="fa-solid fa-chevron-down text-gray-500"></i>
+                </button>
+            </div>
+            
+            <!-- Results Header -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        {% if request.GET.q %}
+                            Search Results for "{{ request.GET.q }}"
+                        {% else %}
+                            All Services
+                        {% endif %}
+                    </h2>
+                    <p class="text-gray-600 mt-1">{{ services|length }} services found</p>
+                </div>
+                <div class="mt-4 sm:mt-0">
+                    <select class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="recent">Most Recent</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="rating">Highest Rated</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Services Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for service in services %}
+                <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 overflow-hidden">
+                    <!-- Service Image -->
+                    <div class="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                        {% if service.expert.profile_picture %}
+                            <img src="{{ service.expert.profile_picture.url }}" alt="{{ service.title }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="text-center text-gray-500">
+                                <i class="fa-solid fa-image text-4xl mb-2"></i>
+                                <p class="text-sm">No Image</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Service Content -->
+                    <div class="p-6">
+                        <!-- Expert Info -->
+                        <div class="flex items-center mb-3">
+                            <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3">
+                                {{ service.expert.user.first_name|first }}{{ service.expert.user.last_name|first }}
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-800">{{ service.expert.user.get_full_name }}</p>
+                                <p class="text-sm text-gray-500">{{ service.expert.location|default:"Location not specified" }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Service Title -->
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2 line-clamp-2">{{ service.title }}</h3>
+                        
+                        <!-- Service Description -->
+                        <p class="text-gray-600 mb-4 line-clamp-3">{{ service.description }}</p>
+                        
+                        <!-- Price and Rating -->
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="text-2xl font-bold text-primary">{{ service.price|floatformat:0 }} FCFA</div>
+                            <div class="flex items-center">
+                                <div class="flex text-warning">
+                                    {% for i in "12345" %}
+                                        <i class="fa-solid fa-star"></i>
+                                    {% endfor %}
+                                </div>
+                                <span class="ml-2 text-sm text-gray-600">(4.8)</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Category and Location -->
+                        <div class="flex items-center justify-between mb-4 text-sm text-gray-500">
+                            <span class="bg-primary-light text-primary px-3 py-1 rounded-full">{{ service.category }}</span>
+                            <span><i class="fa-solid fa-map-marker-alt mr-1"></i>{{ service.location }}</span>
+                        </div>
+                        
+                        <!-- Action Button -->
+                        <a href="{% url 'service_detail' service.id %}" class="w-full bg-primary hover:bg-primary-dark text-white py-3 px-4 rounded-lg font-medium text-center transition-colors duration-200 block">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <!-- No Results -->
+                <div class="col-span-full text-center py-16">
+                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-search text-3xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">No services found</h3>
+                    <p class="text-gray-600 mb-6">Try adjusting your search criteria or browse all services</p>
+                    <a href="{% url 'services:list' %}" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+                        Browse All Services
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if services.has_other_pages %}
+            <div class="mt-12 flex justify-center">
+                <nav class="flex items-center space-x-2">
+                    {% if services.has_previous %}
+                        <a href="?page={{ services.previous_page_number }}" class="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </a>
+                    {% endif %}
+                    
+                    {% for num in services.paginator.page_range %}
+                        {% if services.number == num %}
+                            <span class="px-3 py-2 bg-primary text-white rounded-lg">{{ num }}</span>
+                        {% elif num > services.number|add:'-3' and num < services.number|add:'3' %}
+                            <a href="?page={{ num }}" class="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if services.has_next %}
+                        <a href="?page={{ services.next_page_number }}" class="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Filter Modal -->
+<div class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-50 hidden" id="mobileFilterModal">
+    <div class="bg-white h-full w-80 max-w-full overflow-y-auto">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-gray-800">Filters</h3>
+                <button class="text-gray-500 hover:text-gray-700" onclick="closeMobileFilters()">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Filter Content (same as desktop) -->
+            <!-- Category Filter -->
+            <div class="mb-6">
+                <h4 class="font-medium text-gray-700 mb-3">Category</h4>
+                <div class="space-y-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="category" value="technology" class="rounded border-gray-300 text-primary focus:ring-primary">
+                        <span class="ml-2 text-gray-600">Technology</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="category" value="design" class="rounded border-gray-300 text-primary focus:ring-primary">
+                        <span class="ml-2 text-gray-600">Design & Creative</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="category" value="business" class="rounded border-gray-300 text-primary focus:ring-primary">
+                        <span class="ml-2 text-gray-600">Business & Consulting</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Price Range Filter -->
+            <div class="mb-6">
+                <h4 class="font-medium text-gray-700 mb-3">Price Range</h4>
+                <div class="space-y-2">
+                    <label class="flex items-center">
+                        <input type="radio" name="price" value="0-10000" class="border-gray-300 text-primary focus:ring-primary">
+                        <span class="ml-2 text-gray-600">Under 10,000 FCFA</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="price" value="10000-50000" class="border-gray-300 text-primary focus:ring-primary">
+                        <span class="ml-2 text-gray-600">10,000 - 50,000 FCFA</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="price" value="50000+" class="border-gray-300 text-primary focus:ring-primary">
+                        <span class="ml-2 text-gray-600">50,000+ FCFA</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Apply Filters Button -->
+            <button class="w-full bg-primary hover:bg-primary-dark text-white py-3 px-4 rounded-lg font-medium transition-colors duration-200">
+                Apply Filters
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Mobile filter toggle
+function toggleMobileFilters() {
+    const modal = document.getElementById('mobileFilterModal');
+    modal.classList.toggle('hidden');
+}
+
+function closeMobileFilters() {
+    const modal = document.getElementById('mobileFilterModal');
+    modal.classList.add('hidden');
+}
+
+// Add click event to mobile filter button
+document.addEventListener('DOMContentLoaded', function() {
+    const filterButton = document.querySelector('button[onclick="toggleMobileFilters()"]');
+    if (filterButton) {
+        filterButton.onclick = toggleMobileFilters;
+    }
+});
+</script>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
+{% endblock %}
