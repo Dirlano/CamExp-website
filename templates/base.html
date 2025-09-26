@@ -85,14 +85,14 @@
                                  x-transition:leave-start="transform opacity-100 scale-100" 
                                  x-transition:leave-end="transform opacity-0 scale-95" 
                                  class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
-                                <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors duration-200">
+                                <a href="{% url 'accounts:profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors duration-200">
                                     <i class="fa-solid fa-user mr-2"></i>Profile
                                 </a>
-                                <a href="{% url 'notifications' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors duration-200">
+                                <a href="{% url 'notifications:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors duration-200">
                                     <i class="fa-solid fa-bell mr-2"></i>Notifications
                                 </a>
                                 <div class="border-t border-gray-200 my-1"></div>
-                                <form method="post" action="{% url 'logout' %}">
+                                <form method="post" action="{% url 'accounts:logout' %}">
                                     {% csrf_token %}
                                     <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:text-error hover:bg-gray-50">
                                         <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
@@ -101,11 +101,13 @@
                             </div>
                         </div>
                     {% else %}
-                        <a href="{% url 'login' %}" class="text-gray-700 hover:text-primary transition-colors duration-200 font-medium">
-                            <i class="fa-solid fa-right-to-bracket mr-1"></i> Login
+                        <a href="{% url 'accounts:login' %}" class="text-gray-700 hover:text-primary transition-colors duration-200">
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                            <span class="ml-1">Login</span>
                         </a>
-                        <a href="{% url 'register' %}" class="bg-primary hover:bg-primary-dark text-white px-4 py-1.5 rounded-lg font-medium transition-colors duration-200 text-sm">
-                            Sign Up
+                        <a href="{% url 'accounts:register' %}" class="ml-6 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span class="ml-1">Sign Up</span>
                         </a>
                     {% endif %}
                 </div>
@@ -137,23 +139,23 @@
                         <a href="{% url 'dashboard' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
                             <i class="fa-solid fa-calendar-days mr-2"></i> Dashboard
                         </a>
-                        <a href="{% url 'profile' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
+                        <a href="{% url 'accounts:profile' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
                             <i class="fa-solid fa-user mr-2"></i> Profile
                         </a>
-                        <a href="{% url 'notifications' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
+                        <a href="{% url 'notifications:list' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
                             <i class="fa-solid fa-bell mr-2"></i> Notifications
                         </a>
-                        <form method="post" action="{% url 'logout' %}">
+                        <form method="post" action="{% url 'accounts:logout' %}">
                             {% csrf_token %}
                             <button type="submit" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-error hover:bg-gray-50">
                                 <i class="fa-solid fa-right-from-bracket mr-2"></i> Logout
                             </button>
                         </form>
                     {% else %}
-                        <a href="{% url 'login' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
+                        <a href="{% url 'accounts:login' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary">
                             <i class="fa-solid fa-right-to-bracket mr-2"></i> Login
                         </a>
-                        <a href="{% url 'register' %}" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-primary hover:bg-primary-dark">
+                        <a href="{% url 'accounts:register' %}" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-primary hover:bg-primary-dark">
                             <i class="fa-solid fa-user-plus mr-2"></i> Sign Up
                         </a>
                     {% endif %}
@@ -203,7 +205,7 @@
                     <ul class="space-y-2">
                         <li><a href="{% url 'home' %}" class="text-gray-300 hover:text-white transition-colors duration-200">Home</a></li>
                         <li><a href="{% url 'services:list' %}" class="text-gray-300 hover:text-white transition-colors duration-200">Browse Services</a></li>
-                        <li><a href="{% url 'register' %}" class="text-gray-300 hover:text-white transition-colors duration-200">Become an Expert</a></li>
+                        <li><a href="{% url 'accounts:register' %}" class="text-gray-300 hover:text-white transition-colors duration-200">Become an Expert</a></li>
                         <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">How It Works</a></li>
                     </ul>
                 </div>

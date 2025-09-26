@@ -9,9 +9,12 @@ from django.contrib.auth.views import (
 from .views import register, profile, edit_profile, change_password, delete_account, user_profile, CustomLoginView
 
 urlpatterns = [
-    path('register/', register, name='register'),
+    # Authentication URLs
     path('login/', CustomLoginView.as_view(template_name='accounts/login.html'), name='login'),
-    path('logout/', LogoutView.as_view(), name='logout'),
+    path('register/', register, name='register'),
+    path('logout/', LogoutView.as_view(next_page='home'), name='logout'),
+    
+    # Profile URLs
     path('profile/', profile, name='profile'),
     path('edit_profile/', edit_profile, name='edit_profile'),
     path('change_password/', change_password, name='change_password'),
@@ -22,7 +25,8 @@ urlpatterns = [
     path('password_reset/', PasswordResetView.as_view(
         template_name='registration/password_reset_form.html',
         email_template_name='registration/password_reset_email.html',
-        subject_template_name='registration/password_reset_subject.txt'
+        subject_template_name='registration/password_reset_subject.txt',
+        success_url='/accounts/password_reset/done/'
     ), name='password_reset'),
     
     path('password_reset/done/', PasswordResetDoneView.as_view(
@@ -30,10 +34,14 @@ urlpatterns = [
     ), name='password_reset_done'),
     
     path('reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(
-        template_name='registration/password_reset_confirm.html'
+        template_name='registration/password_reset_confirm.html',
+        success_url='/accounts/reset/done/'
     ), name='password_reset_confirm'),
     
     path('reset/done/', PasswordResetCompleteView.as_view(
         template_name='registration/password_reset_complete.html'
     ), name='password_reset_complete'),
 ]
+
+# This will help with reverse URL lookups
+app_name = 'accounts'

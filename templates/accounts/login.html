@@ -15,7 +15,7 @@
 
         <!-- Login Form -->
         <div class="bg-white rounded-2xl shadow-xl p-8">
-            <form method="post" class="space-y-6">
+            <form method="post" action="{% url 'accounts:login' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}" class="space-y-6">
                 {% csrf_token %}
                 
                 <!-- Username/Email -->
@@ -84,7 +84,7 @@
                         >
                         <span class="ml-2 text-sm text-gray-600">Remember me</span>
                     </label>
-                    <a href="{% url 'password_reset' %}" class="text-sm text-primary hover:text-primary-dark font-medium transition-colors duration-200">
+                    <a href="{% url 'accounts:password_reset' %}" class="text-sm text-primary hover:text-primary-dark font-medium transition-colors duration-200">
                         Forgot password?
                     </a>
                 </div>
@@ -136,7 +136,7 @@
             <div class="mt-6 text-center">
                 <p class="text-gray-600">
                     Don't have an account? 
-                    <a href="{% url 'register' %}" class="text-primary hover:text-primary-dark font-medium transition-colors duration-200">
+                    <a href="{% url 'accounts:register' %}" class="text-primary hover:text-primary-dark font-medium transition-colors duration-200">
                         Sign up here
                     </a>
                 </p>

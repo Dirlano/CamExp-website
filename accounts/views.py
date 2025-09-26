@@ -57,7 +57,7 @@ def register(request):
                 )
                 logger.info(f"User {user.username} created successfully")
             
-            return redirect('login')
+            return redirect('accounts:login')  # Using the accounts namespace
         else:
             logger.error(f"Form errors: {form.errors}")
             messages.error(request, 'Please correct the errors below.')
@@ -71,16 +71,33 @@ def register(request):
 
 class CustomLoginView(LoginView):
     template_name = 'accounts/login.html'
+    redirect_authenticated_user = True
     
     def get_success_url(self):
-        # Check if the user has a profile
-        if not hasattr(self.request.user, 'profile'):
-            return reverse_lazy('home')
+        # If there's a 'next' parameter, use it
+        next_url = self.request.GET.get('next')
+        if next_url and next_url != reverse_lazy('accounts:login'):  # Use namespaced URL name
+            return next_url
             
-        # Redirect based on user type
-        if self.request.user.profile.user_type == 'expert':
-            return reverse_lazy('expert_dashboard')
-        return reverse_lazy('client_dashboard')
+        # For authenticated users, redirect based on their profile
+        if self.request.user.is_authenticated:
+            # Check if the user has a profile
+            if not hasattr(self.request.user, 'profile'):
+                return reverse_lazy('home')
+                
+            # Redirect based on user type
+            if self.request.user.profile.user_type == 'expert':
+                return reverse_lazy('expert_dashboard')
+            return reverse_lazy('client_dashboard')
+            
+        # Default fallback
+        return reverse_lazy('home')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Ensure the form action uses the correct URL
+        context['login_url'] = 'accounts:login'
+        return context
 
 @login_required
 def profile(request):
@@ -243,77 +260,100 @@ def client_dashboard(request):
 @login_required
 def expert_dashboard(request):
     """Dashboard view for experts"""
-    if not hasattr(request.user, 'profile') or request.user.profile.user_type != 'expert':
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info("=== EXPERT DASHBOARD VIEW STARTED ===")
+    logger.info(f"Request path: {request.path}")
+    logger.info(f"Request method: {request.method}")
+    logger.info(f"User: {request.user}")
+    logger.info(f"User is authenticated: {request.user.is_authenticated}")
+    
+    if not hasattr(request.user, 'profile'):
+        logger.error(f"User {request.user} has no profile")
         return redirect('home')
     
-    from django.db.models import Avg, Count
-    from services.models import Rating
+    logger.info(f"User profile exists. User type: {request.user.profile.user_type}")
+        
+    if request.user.profile.user_type != 'expert':
+        logger.warning(f"User {request.user} is not an expert (user_type: {request.user.profile.user_type})")
+        return redirect('home')
     
-    profile = request.user.profile
-    
-    # Active services
-    active_services = ServiceListing.objects.filter(
-        expert=profile,
-        status='active'
-    )
-    
-    # Active projects with related data
-    active_projects = Project.objects.select_related('request').filter(
-        request__accepted_expert=profile,
-        status='in_progress'
-    ).order_by('-created_at')
-    
-    # Upcoming events
-    today = timezone.now().date()
-    upcoming_events = Event.objects.select_related('project__request').filter(
-        project__request__accepted_expert=profile,
-        start__date__gte=today
-    ).order_by('start')[:5]
-    
-    # Completed projects (last 5)
-    completed_projects = Project.objects.select_related('request').filter(
-        request__accepted_expert=profile,
-        status='completed'
-    ).order_by('-updated_at')[:5]
-    
-    # Total earnings from completed projects with budget
-    completed_with_budget = Project.objects.select_related('request').filter(
-        request__accepted_expert=profile,
-        status='completed',
-        request__budget__isnull=False
-    )
-    total_earnings = sum(
-        project.request.budget for project in completed_with_budget
-        if project.request.budget is not None
-    )
-    
-    # Rating statistics from Rating model
-    rating_stats = Rating.objects.filter(
-        expert=profile
-    ).aggregate(
-        avg_rating=Avg('score'),
-        rating_count=Count('id')
-    )
-    
-    # Projects by status
-    projects_by_status = Project.objects.filter(
-        request__accepted_expert=profile
-    ).values('status').annotate(
-        count=Count('status')
-    ).order_by('status')
-    
-    context = {
-        'active_services': active_services,
-        'services_count': active_services.count(),
-        'active_projects': active_projects,
-        'active_projects_count': active_projects.count(),
-        'upcoming_events': upcoming_events,
-        'completed_projects': completed_projects,
-        'total_earnings': total_earnings or 0,
-        'avg_rating': rating_stats['avg_rating'] or 0,
-        'rating_count': rating_stats['rating_count'],
-        'projects_by_status': projects_by_status,
-        'active_tab': 'expert_dashboard',
-    }
-    
-    return render(request, 'dashboard/expert_dashboard.html', context)
+    try:
+        profile = request.user.profile
+        logger.info(f"Loading dashboard for expert: {profile.user.username}")
+        
+        # Active services
+        active_services = ServiceListing.objects.filter(
+            expert=profile,
+            status='active'
+        )
+        logger.info(f"Found {active_services.count()} active services")
+        
+        # Active projects with related data
+        active_projects = Project.objects.select_related('request').filter(
+            request__accepted_expert=profile,
+            status='in_progress'
+        ).order_by('-created_at')
+        logger.info(f"Found {active_projects.count()} active projects")
+        
+        # Upcoming events
+        today = timezone.now().date()
+        upcoming_events = Event.objects.select_related('project__request').filter(
+            project__request__accepted_expert=profile,
+            start__date__gte=today
+        ).order_by('start')[:5]
+        logger.info(f"Found {len(upcoming_events)} upcoming events")
+        
+        # Completed projects (last 5)
+        completed_projects = Project.objects.select_related('request').filter(
+            request__accepted_expert=profile,
+            status='completed'
+        ).order_by('-updated_at')[:5]
+        logger.info(f"Found {len(completed_projects)} completed projects")
+        
+        # Total earnings from completed projects with budget
+        completed_with_budget = Project.objects.select_related('request').filter(
+            request__accepted_expert=profile,
+            status='completed',
+            request__budget__isnull=False
+        )
+        total_earnings = sum(
+            project.request.budget for project in completed_with_budget
+            if project.request.budget is not None
+        )
+        logger.info(f"Total earnings: {total_earnings}")
+        
+        # Calculate average rating
+        ratings = Rating.objects.filter(project__request__accepted_expert=profile)
+        avg_rating = ratings.aggregate(avg=Avg('score'))['avg'] or 0
+        rating_count = ratings.count()
+        logger.info(f"Average rating: {avg_rating} from {rating_count} ratings")
+        
+        # Projects by status for chart
+        projects_by_status = Project.objects.filter(
+            request__accepted_expert=profile
+        ).values('status').annotate(count=Count('id'))
+        logger.info(f"Projects by status: {list(projects_by_status)}")
+        
+        context = {
+            'active_services': active_services,
+            'services_count': active_services.count(),
+            'active_projects': active_projects,
+            'active_projects_count': active_projects.count(),
+            'upcoming_events': upcoming_events,
+            'completed_projects': completed_projects,
+            'total_earnings': total_earnings,
+            'avg_rating': avg_rating,
+            'rating_count': rating_count,
+            'projects_by_status': projects_by_status,
+            'active_tab': 'expert_dashboard',
+        }
+        
+        logger.info("Rendering expert dashboard template")
+        return render(request, 'dashboard/expert_dashboard.html', context)
+        
+    except Exception as e:
+        logger.error(f"Error in expert_dashboard: {str(e)}", exc_info=True)
+        messages.error(request, 'An error occurred while loading the dashboard.')
+        return redirect('home')
