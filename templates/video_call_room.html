@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Video Call - {{ room_id }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100">
+    <!-- Header -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Video Call</h1>
+                    <p class="text-sm text-gray-600">Room: {{ room_id }}</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    {% if is_admin %}
+                    <button onclick="endCall()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                        <i class="fa-solid fa-phone-slash mr-2"></i>End Call for All
+                    </button>
+                    {% endif %}
+                    <a href="{% url 'notifications:list' %}" class="text-gray-600 hover:text-gray-800">
+                        <i class="fa-solid fa-arrow-left mr-2"></i>Back to Notifications
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Call Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="video-call-container" class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <!-- Jitsi Meet will be loaded here -->
+            <div id="jitsi-container" class="w-full" style="height: 600px;"></div>
+        </div>
+
+        <!-- Call Info -->
+        <div class="mt-6 bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Call Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-600">Project</p>
+                    <p class="font-medium">{{ call.contract.title }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Participants</p>
+                    <p class="font-medium">
+                        <span id="participant-count">
+                            {% for participant in call.participants.all %}
+                                {{ participant.get_full_name|default:participant.username }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </span>
+                    </p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Started</p>
+                    <p class="font-medium">{{ call.start_time|date:"M j, Y g:i A" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Status</p>
+                    <span class="px-2 py-1 text-xs font-medium rounded-full
+                        {% if call.status == 'active' %}bg-green-100 text-green-800
+                        {% elif call.status == 'ended' %}bg-red-100 text-red-800
+                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                        {{ call.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load Jitsi Meet API -->
+<script src="https://meet.jit.si/external_api.js"></script>
+
+<!-- Video Call JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roomId = '{{ room_id }}';
+    const userName = '{{ user_name }}';
+    const isAdmin = {{ is_admin|lower }};
+
+    // Initialize Jitsi Meet
+    const domain = 'meet.jit.si';
+    const options = {
+        roomName: roomId,
+        width: '100%',
+        height: '100%',
+        parentNode: document.querySelector('#jitsi-container'),
+        userInfo: {
+            displayName: userName,
+        },
+        configOverwrite: {
+            // Multi-party call optimizations
+            startWithAudioMuted: false,
+            startWithVideoMuted: false,
+            enableWelcomePage: false,
+            prejoinPageEnabled: false,
+            disableThirdPartyRequests: true,
+            enableNoAudioDetection: true,
+            enableNoisyMicDetection: true,
+            // P2P settings for better multi-party performance
+            p2p: {
+                enabled: false, // Disable P2P for server-based calls
+            },
+            // Video quality settings
+            resolution: 720,
+            constraints: {
+                video: {
+                    height: {
+                        ideal: 720,
+                        max: 720,
+                        min: 180
+                    },
+                    width: {
+                        ideal: 1280,
+                        max: 1280,
+                        min: 320
+                    }
+                }
+            },
+            // Connection settings
+            websocket: 'wss://meet.jit.si/xmpp-websocket',
+            hosts: {
+                domain: 'meet.jit.si',
+                muc: 'conference.meet.jit.si',
+                focus: 'focus.meet.jit.si'
+            },
+            bosh: '//meet.jit.si/http-bind',
+            clientNode: 'https://meet.jit.si',
+        },
+        interfaceConfigOverwrite: {
+            // UI customizations for better UX
+            SHOW_JITSI_WATERMARK: false,
+            SHOW_WATERMARK_FOR_GUESTS: false,
+            SHOW_BRAND_WATERMARK: false,
+            SHOW_POWERED_BY: false,
+            DISABLE_JOIN_LEAVE_NOTIFICATIONS: false,
+            // Enable filmstrip for multiple participants
+            DISABLE_VIDEO_BACKGROUND: false,
+            VERTICAL_FILMSTRIP: true,
+            // Chat settings
+            CLOSE_CHAT_AFTER_CONFERENCE: false,
+            // Recording and other features
+            ENABLE_RECORDING: false,
+            ENABLE_LIVE_STREAMING: false,
+        },
+    };
+
+    try {
+        const api = new JitsiMeetExternalAPI(domain, options);
+
+        // Store API reference globally for endCall function
+        window.jitsiAPI = api;
+
+        // Event listeners
+        api.addEventListener('videoConferenceJoined', () => {
+            console.log('Joined video conference successfully');
+            // Update UI to show connected status
+            updateConnectionStatus('Connected', 'success');
+        });
+
+        api.addEventListener('videoConferenceLeft', () => {
+            console.log('Left video conference');
+            updateConnectionStatus('Disconnected', 'warning');
+            // Redirect back to notifications after a short delay
+            setTimeout(() => {
+                window.location.href = '{% url "notifications:list" %}';
+            }, 2000);
+        });
+
+        // Handle participant events
+        api.addEventListener('participantJoined', (participant) => {
+            console.log('Participant joined:', participant.displayName);
+            updateParticipantCount();
+        });
+
+        api.addEventListener('participantLeft', (participant) => {
+            console.log('Participant left:', participant.displayName);
+            updateParticipantCount();
+        });
+
+        // Connection and error handling
+        api.addEventListener('connectionEstablished', () => {
+            console.log('Connection established');
+            updateConnectionStatus('Connecting...', 'info');
+        });
+
+        api.addEventListener('connectionFailed', (error) => {
+            console.error('Connection failed:', error);
+            updateConnectionStatus('Connection Failed', 'error');
+        });
+
+        api.addEventListener('connectionDisconnected', () => {
+            console.log('Connection disconnected');
+            updateConnectionStatus('Disconnected', 'warning');
+        });
+
+        // Ready to close
+        api.addEventListener('readyToClose', () => {
+            console.log('Ready to close conference');
+        });
+
+    } catch (error) {
+        console.error('Failed to initialize Jitsi Meet:', error);
+        updateConnectionStatus('Failed to load video call', 'error');
+
+        // Fallback: show error message
+        const container = document.getElementById('jitsi-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="flex items-center justify-center h-full">
+                    <div class="text-center">
+                        <div class="text-red-500 text-6xl mb-4">
+                            <i class="fa-solid fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Video Call Failed to Load</h3>
+                        <p class="text-gray-600 mb-4">Please check your internet connection and try refreshing the page.</p>
+                        <button onclick="location.reload()" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg">
+                            <i class="fa-solid fa-refresh mr-2"></i>Retry
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+});
+
+function endCall() {
+    if (window.jitsiAPI) {
+        // End call for everyone
+        fetch(`/api/video-calls/{{ call.id }}/end/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                window.jitsiAPI.executeCommand('hangup');
+                alert('Call ended for all participants');
+            } else {
+                alert('Failed to end call');
+            }
+        })
+        .catch(error => {
+            console.error('Error ending call:', error);
+            alert('Error ending call');
+        });
+    }
+}
+
+// Helper functions for UI updates
+function updateConnectionStatus(status, type) {
+    // Create or update status indicator
+    let statusElement = document.getElementById('connection-status');
+    if (!statusElement) {
+        statusElement = document.createElement('div');
+        statusElement.id = 'connection-status';
+        statusElement.className = 'fixed top-4 right-4 px-4 py-2 rounded-lg text-sm font-medium z-50';
+        document.body.appendChild(statusElement);
+    }
+
+    statusElement.textContent = status;
+    statusElement.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-sm font-medium z-50 ${
+        type === 'success' ? 'bg-green-500 text-white' :
+        type === 'error' ? 'bg-red-500 text-white' :
+        type === 'warning' ? 'bg-yellow-500 text-black' :
+        'bg-blue-500 text-white'
+    }`;
+
+    // Auto-hide success messages after 3 seconds
+    if (type === 'success') {
+        setTimeout(() => {
+            if (statusElement) {
+                statusElement.remove();
+            }
+        }, 3000);
+    }
+}
+
+function updateParticipantCount() {
+    if (window.jitsiAPI) {
+        try {
+            const participants = window.jitsiAPI.getParticipantsInfo();
+            const count = participants.length + 1; // +1 for current user
+            console.log(`Current participants: ${count}`);
+
+            // Update participant count in UI if element exists
+            const countElement = document.getElementById('participant-count');
+            if (countElement) {
+                countElement.textContent = `${count} participant${count !== 1 ? 's' : ''}`;
+            }
+        } catch (error) {
+            console.error('Error getting participant count:', error);
+        }
+    }
+}
+</script>
+
+<style>
+/* Jitsi Meet customizations */
+#jitsi-container {
+    border-radius: 1rem 1rem 0 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    #jitsi-container {
+        height: 400px !important;
+    }
+}
+</style>
+{% endblock %}
